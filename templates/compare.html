@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Compare original vs. mitigated</title>
+</head>
+<body>
+
+	<h1>Compare</h1>
+	<table>
+		<thead>
+			<tr>
+				<th></th>
+				<th>Original</th>
+				<th>Mitigated</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th>Recall</th>
+				<td>{{ original.recall }}</td>
+				<td>{{ mitigated.recall }}</td>
+			</tr>
+			<tr>
+				<th>True negative rate</th>
+				<td>{{ original.true_negative_rate }}</td>
+				<td>{{ mitigated.true_negative_rate }}</td>
+			</tr>
+			<tr>
+				<th>False positive rate</th>
+				<td>{{ original.false_positive_rate }}</td>
+				<td>{{ mitigated.false_positive_rate }}</td>
+			</tr>
+			<tr>
+				<th>False negative rate</th>
+				<td>{{ original.false_negative_rate }}</td>
+				<td>{{ mitigated.false_negative_rate }}</td>
+			</tr>
+			<tr>
+				<th>Precision</th>
+				<td>{{ original.precision }}</td>
+				<td>{{ mitigated.precision }}</td>
+			</tr>
+			<tr>
+				<th>Negative predictive value</th>
+				<td>{{ original.negative_predictive_value }}</td>
+				<td>{{ mitigated.negative_predictive_value }}</td>
+			</tr>
+			<tr>
+				<th>False discovery rate</th>
+				<td>{{ original.false_discovery_rate }}</td>
+				<td>{{ mitigated.false_discovery_rate }}</td>
+			</tr>
+			<tr>
+				<th>False omission rate</th>
+				<td>{{ original.false_omission_rate }}</td>
+				<td>{{ mitigated.false_omission_rate }}</td>
+			</tr>
+			<tr>
+				<th>Accuracy</th>
+				<td>{{ original.accuracy }}</td>
+				<td>{{ mitigated.accuracy }}</td>
+			</tr>
+			<tr>
+				<th>Error rate</th>
+				<td>{{ original.error_rate }}</td>
+				<td>{{ mitigated.error_rate }}</td>
+			</tr>
+			<tr>
+				<th>Average odds difference</th>
+				<td>{{ original.average_odds_difference }}</td>
+				<td>{{ mitigated.average_odds_difference }}</td>
+			</tr>
+			<tr>
+				<th>Average abs odds difference</th>
+				<td>{{ original.average_abs_odds_difference }}</td>
+				<td>{{ mitigated.average_abs_odds_difference }}</td>
+			</tr>
+			<tr>
+				<th>Selection rate</th>
+				<td>{{ original.selection_rate }}</td>
+				<td>{{ mitigated.selection_rate }}</td>
+			</tr>
+			<tr>
+				<th>Disparate impact</th>
+				<td>{{ original.disparate_impact }}</td>
+				<td>{{ mitigated.disparate_impact }}</td>
+			</tr>
+			<tr>
+				<th>Statistical parity difference</th>
+				<td>{{ original.statistical_parity_difference }}</td>
+				<td>{{ mitigated.statistical_parity_difference }}</td>
+			</tr>
+			<tr>
+				<th>Generalized entropy index</th>
+				<td>{{ original.generalized_entropy_index }}</td>
+				<td>{{ mitigated.generalized_entropy_index }}</td>
+			</tr>
+			<tr>
+				<th>Theil index</th>
+				<td>{{ original.theil_index }}</td>
+				<td>{{ mitigated.theil_index }}</td>
+			</tr>
+			<tr>
+				<th>Equal opportunity difference</th>
+				<td>{{ original.equal_opportunity_difference }}</td>
+				<td>{{ mitigated.equal_opportunity_difference }}</td>
+			</tr>
+		</tbody>
+	</table>
+
+</body>
+</html>

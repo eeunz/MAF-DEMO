@@ -1,0 +1,30 @@
+<html>
+	<head>
+		<title>Bias metrics</title>
+	</head>
+	<body>
+		<h1>Bias metrics</h1>
+		<div>
+			<b>Recall</b>: {{ recall }}<br>
+			<b>True negative rate</b>: {{ true_negative_rate }}<br>
+			<b>False positive rate</b>: {{ false_positive_rate }}<br>
+			<b>False negative rate</b>: {{ false_negative_rate }}<br>
+			<b>Precision</b>: {{ precision }}<br>
+			<b>Negative predictive value</b>: {{ negative_predictive_value }}<br>
+			<b>False discovery rate</b>: {{ false_discovery_rate }}<br>
+			<b>False omission rate</b>: {{ false_omission_rate }}<br>
+			<b>Accuracy</b>: {{ accuracy }}<br>
+			<b>Error rate</b>: {{ error_rate }}<br>
+			<b>Average odds difference</b>: {{ average_odds_difference }}<br>
+			<b>Average abs odds difference</b>: {{ average_abs_odds_difference }}<br>
+			<b>Selection rate</b>: {{ selection_rate }}<br>
+			<b>Disparate impact</b>: {{ disparate_impact }}<br>
+			<b>Statistical parity difference</b>: {{ statistical_parity_difference }}<br>
+			<b>Generalized entropy index</b>: {{ generalized_entropy_index }}<br>
+			<b>Theil index</b>: {{ theil_index }}<br>
+			<b>Equal opportunity difference</b>: {{ equal_opportunity_difference }}<br>
+		</div>
+		<a href="/data">Prev</a>
+		<a href="/algorithm/{{data_name}}">Next</a>
+	</body>
+</html>
