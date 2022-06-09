@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, Form, Body, BackgroundTasks, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 from Kaif.DataSet import RawDataSet, aifData
 from Kaif.Metric import DataMetric, ClassificationMetric
@@ -17,13 +18,18 @@ from sample import AdultDataset, GermanDataset, CompasDataset
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
-
+metrics = None
+miti_result = None
 
 # Data selection
 @app.get("/data")
 async def data_selection(request: Request):
+    metrics = None
+    miti_result = None
+
     context = {
         'request': request
     }
@@ -96,45 +102,48 @@ class Mitigation:
         # Make privileged group and unprivileged group
         privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
         unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+        # Split the dataset
+        dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
         
         print("Mitigation start")
         if method_id == 1:
             # Disparate impact remover
-            fair_mod = Disparate_Impact_Remover(rep_level=0.5, sensitive_attribute=dataset.protected_attribute_names[0])
-            transf_dataset = fair_mod.fit_transform(dataset)
+            fair_mod = Disparate_Impact_Remover(rep_level=0.5, sensitive_attribute=dataset_train.protected_attribute_names[0])
+            transf_dataset = fair_mod.fit_transform(dataset_train)
 
             # Train
             model = svm.SVC(random_state=777)
             model.fit(transf_dataset.features, transf_dataset.labels.ravel())
 
             # Prediction
-            pred = model.predict(transf_dataset.features)
+            pred = model.predict(dataset_test.features)
 
         elif method_id == 2:
             # Learning fair representation
             fair_mod = Learning_Fair_Representation(unprivileged_groups=[unprivilege[0]], privileged_groups=[privilege[0]])
-            transf_dataset = fair_mod.fit_transform(dataset)
-            transf_dataset.labels = dataset.labels
+            transf_dataset = fair_mod.fit_transform(dataset_train)
+            transf_dataset.labels = dataset_train.labels
 
             # Train
             model = svm.SVC(random_state=777)
             model.fit(transf_dataset.features, transf_dataset.labels.ravel())
 
             # Prediction
-            pred = model.predict(transf_dataset.features)
+            pred = model.predict(dataset_test.features)
 
         elif method_id == 3:
             # Reweighing
             fair_mod = RW(unprivileged_groups=unprivilege, privileged_groups=privilege)
-            transf_dataset = fair_mod.fit_transform(dataset)
-            transf_dataset.labels = dataset.labels
+            transf_dataset = fair_mod.fit_transform(dataset_train)
+            transf_dataset.labels = dataset_train.labels
 
             # Train
             model = svm.SVC(random_state=777)
             model.fit(transf_dataset.features, transf_dataset.labels.ravel())
 
             # Prediction
-            pred = model.predict(transf_dataset.features)
+            pred = model.predict(dataset_test.features)
 
         #elif method_id == 4:
             # Adversarial debiasing
@@ -142,10 +151,10 @@ class Mitigation:
         elif method_id == 5:
             # Gerry fair classifier
             gfc = Gerry_Fair_Classifier()
-            gfc.fit(dataset)
+            gfc.fit(dataset_train)
 
             # Train
-            transf_dataset = gfc.predict(dataset)
+            transf_dataset = gfc.predict(dataset_test)
 
             # Prediction
             pred = transf_dataset.labels
@@ -153,10 +162,10 @@ class Mitigation:
         elif method_id == 6:
             # Meta fair classifier
             mfc = Meta_Fair_Classifier()
-            mfc.fit(dataset)
+            mfc = mfc.fit(dataset_train)
 
             # Train
-            transf_dataset = mfc.predict(dataset)
+            transf_dataset = mfc.predict(dataset_test)
 
             # Prediction
             pred = transf_dataset.labels
@@ -164,31 +173,32 @@ class Mitigation:
         elif method_id == 7:
             # Prejudice remover
             pr = Prejudice_Remover()
-            pr.fit(dataset)
+            pr.fit(dataset_train)
 
             # Train
-            transf_dataset = pr.predict(dataset)
+            transf_dataset = pr.predict(dataset_test)
 
             # Prediction
             pred = transf_dataset.labels
             
         elif method_id == 8:
             # Fair batch
-            protected_label = dataset.protected_attribute_names[0]
-            protected_idx = dataset.feature_names.index(protected_label)
-            biased = dataset.features[:, protected_idx]
+            protected_label = dataset_train.protected_attribute_names[0]
+            protected_idx = dataset_train.feature_names.index(protected_label)
+            biased = dataset_train.features[:, protected_idx]
 
             # RawDataSet
-            train_data = RawDataSet(x=dataset.features, y=dataset.labels, z=biased)
+            train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels, z=biased)
 
             # Prediction
             batch_size = 256
             alpha = 0.1
             fairness = 'eqodds'
-            pred = FairBatch.train(train_data, batch_size, alpha, fairness)
+            model, cls2val, _ = FairBatch.train(train_data, batch_size, alpha, fairness)
+            pred = FairBatch.evaluation(model, dataset_test, cls2val)
 
             # Transformed dataset
-            transf_dataset = dataset.copy()
+            transf_dataset = dataset_test.copy(deepcopy=True)
             transf_dataset.labels = np.array(pred).reshape(len(pred), -1)
 
         elif method_id == 9:
@@ -199,12 +209,13 @@ class Mitigation:
             pass
         elif method_id == 11:
             # Kernel density_estimation
-            protected_label = dataset.protected_attribute_names[0]
-            protected_idx = dataset.feature_names.index(protected_label)
-            biased = dataset.features[:, protected_idx]
+            protected_label = dataset_train.protected_attribute_names[0]
+            protected_idx = dataset_train.feature_names.index(protected_label)
+            biased = dataset_train.features[:, protected_idx]
 
             # RawDataSet
-            train_data = RawDataSet(x=dataset.features, y=dataset.labels.ravel(), z=biased)
+            train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels.ravel(), z=biased)
+            test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels.ravel(), z=biased)
 
             # Train
             fairness_type = 'DP'
@@ -215,27 +226,78 @@ class Mitigation:
             kde.train()
 
             # Prediction
-            pred = kde.evaluation(all_data=True)
+            pred = kde.evaluation(test_data)
 
         elif method_id == 12:
-            # Learning from fairness
+            # Learning from fairness (Image only)
             pass
         elif method_id == 13:
             # Calibrated equalized odds
-            pass
+
+            # Train
+            model = svm.SVC(random_state=777)
+            model.fit(dataset_train.features, dataset_train.labels.ravel())
+
+            # Prediction
+            pred = model.predict(dataset_test.features)
+            dataset_test_pred = dataset_test.copy(deepcopy=True)
+            dataset_test_pred.labels = np.array(pred).reshape(len(pred), -1)
+
+            # Post-processing
+            cpp = Calibrated_EqOdds([unprivilege[0]], [privilege[0]])
+            cpp = cpp.fit(dataset_test, dataset_test_pred)
+
+            # Re-prediction
+            pred_dataset = cpp.predict(dataset_test_pred)
+            pred = pred_dataset.scores
+
         elif method_id == 14:
             # Equalized odds
-            pass
+
+            # Train
+            model = svm.SVC(random_state=777)
+            model.fit(dataset_train.features, dataset_train.labels.ravel())
+
+            # Prediction
+            pred = model.predict(dataset_test.features)
+            dataset_test_pred = dataset_test.copy(deepcopy=True)
+            dataset_test_pred.labels = np.array(pred).reshape(len(pred), -1)
+
+            # Post-processing
+            eqodds = EqualizedOdds([unprivilege[0]], [privilege[0]])
+            eqodds = eqodds.fit(dataset_test, dataset_test_pred)
+
+            # Re-prediction
+            pred_dataset = eqodds.predict(dataset_test_pred)
+            pred = pred_dataset.scores
+
         elif method_id == 15:
             # Reject option
-            pass
+
+            # Train
+            model = svm.SVC(random_state=777)
+            model.fit(dataset_train.features, dataset_train.labels.ravel())
+
+            # Prediction
+            predict = model.predict(dataset_test.features)
+            dataset_test_pred = dataset_test.copy(deepcopy=True)
+            dataset_test_pred.labels = np.array(pred).reshape(len(pred), -1)
+
+            # Post-processing
+            ro = RejectOption([unprivilege[0]], [privilege[0]])
+            ro = ro.fit(dataset_test, dataset_test_pred)
+
+            # Re-prediction
+            pred_dataset = ro.predict(dataset_test_pred)
+            pred = pred_dataset.scores
+            
         else:
             print("ERROR!!")
 
         ## metric
-        transf_metric = ClassificationMetric(dataset=transf_dataset, 
+        transf_metric = ClassificationMetric(dataset=dataset_test, 
             privilege=privilege, unprivilege=unprivilege, 
-            prediction_vector=pred, target_label_name=transf_dataset.label_names[0])
+            prediction_vector=pred, target_label_name=dataset_test.label_names[0])
         perfm = transf_metric.performance_measures()
         print("Mitigation end")
 

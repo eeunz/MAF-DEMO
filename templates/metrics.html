@@ -1,6 +1,8 @@
 <html>
 	<head>
 		<title>Bias metrics</title>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/style/biaschart.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/style/dlchart.css') }}">
 	</head>
 	<body>
 		<h1>Bias metrics</h1>
@@ -24,6 +26,54 @@
 			<b>Theil index</b>: {{ theil_index }}<br>
 			<b>Equal opportunity difference</b>: {{ equal_opportunity_difference }}<br>
 		</div>
+		<h1>Bias charts</h1>
+		<div>
+			<!-- Bias chart area -->
+			<figure class="highcharts-figure">
+				<div id="performance_chart" class="bar"></div>
+				<div id="bias_chart" class="bar"></div>
+			</figure>
+		</div>
+
+		<!-- Bias chart script -->
+		<script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
+		<script type="text/javascript" src="https://code.highcharts.com/highcharts-3d.js"></script>
+		<script type="text/javascript" src="https://code.highcharts.com/highcharts-more.js"></script>
+		<script type="text/javascript" src="/static/src/bias_chart.js"></script>
+
+		<!-- Resource Script -->
+		<script type="text/javascript">
+			const performanceMeasure = [
+				{{ true_negative_rate }},
+				{{ false_positive_rate }},
+				{{ false_negative_rate }},
+				{{ recall }},
+				{{ precision }},
+				{{ negative_predictive_value }},
+				{{ false_discovery_rate }},
+				{{ false_omission_rate }},
+				{{ accuracy }}
+			];
+
+			const biasMeasure = [
+				{{ average_odds_difference }},
+				{{ selection_rate }},
+				{{ disparate_impact }},
+				{{ statistical_parity_difference }},
+				{{ theil_index }},
+				{{ equal_opportunity_difference }}
+			]
+
+			const performanceBar = new BarChart("performance_chart");
+			performanceBar.setAxis(["TNR", "FPR", "FNR", "Recall", "Precision", "NPV", "FDR", "FOR", "ACC"]);
+			performanceBar.push(performanceMeasure, {name: "Performance"});
+			performanceBar.show();
+
+			const biasBar = new BarChart("bias_chart");
+			biasBar.setAxis(["Average odds difference", "Selection rate", "Disparate impact", "Statistical parity difference", "Theil index", "Equal opportunity difference"]);
+			biasBar.push(biasMeasure, {name: "Bias Measure"});
+			biasBar.show();
+		</script>
 		<a href="/data">Prev</a>
 		<a href="/algorithm/{{data_name}}">Next</a>
 	</body>
