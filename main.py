@@ -13,7 +13,7 @@ from Kaif.Algorithms.sota import FairBatch, FairFeatureDistillation, FairnessVAE
 from sklearn import svm
 import numpy as np
 
-from sample import AdultDataset, GermanDataset, CompasDataset
+from sample import AdultDataset, GermanDataset, CompasDataset, PubFigDataset
 
 
 app = FastAPI()
@@ -27,6 +27,8 @@ miti_result = None
 # Data selection
 @app.get("/data")
 async def data_selection(request: Request):
+    global metrics
+    global miti_result
     metrics = None
     miti_result = None
 
@@ -203,10 +205,48 @@ class Mitigation:
 
         elif method_id == 9:
             # Fair feature distillation (Image only)
-            pass
+            protected_label = dataset_train.protected_attribute_names[0]
+            protected_idx = dataset_train.feature_names.index(protected_label)
+            biased = dataset_train.features[:, protected_idx]
+
+            # RawDataSet
+            train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels.ravel(), z=biased)
+            test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels.ravel(), z=biased)
+
+            # Train
+            n_epoch = 20
+            batch_size = 64
+            learning_rate = 0.01
+            image_shape = (3, 64, 64)
+            ffd = FairFeatureDistillation.FFD(train_data, n_epoch, batch_size, learning_rate, image_shape)
+            ffd.train_teacher()
+            ffd.train_student()
+
+            # Prediction
+            pred = ffd.evaluation(test_data, image_shape)
+
         elif method_id == 10:
             # Fair VAE (Image only)
-            pass
+            protected_label = dataset_train.protected_attribute_names[0]
+            protected_idx = dataset_train.feature_names.index(protected_label)
+            biased = dataset_train.features[:, protected_idx]
+
+            # RawDataSet
+            train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels.ravel(), z=biased)
+            test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels.ravel(), z=biased)
+
+            # Train
+            z_dim = 20
+            batch_size = 32
+            num_epochs = 20
+            image_shape=(3, 64, 64)
+            fvae = FairnessVAE.FairnessVAE(train_data, z_dim, batch_size, num_epochs, image_shape=image_shape)
+            fvae.train_upstream()
+            fvae.train_downstream()
+
+            # Prediction
+            pred = fvae.evaluation(test_data, image_shape)
+
         elif method_id == 11:
             # Kernel density_estimation
             protected_label = dataset_train.protected_attribute_names[0]
@@ -230,7 +270,25 @@ class Mitigation:
 
         elif method_id == 12:
             # Learning from fairness (Image only)
-            pass
+            protected_label = dataset_train.protected_attribute_names[0]
+            protected_idx = dataset_train.feature_names.index(protected_label)
+            biased = dataset_train.features[:, protected_idx]
+
+            # RawDataSet
+            train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels.ravel(), z=biased)
+            test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels.ravel(), z=biased)
+
+            # Train
+            n_epoch = 20
+            batch_size = 64
+            learning_rate = 0.01
+            image_shape = (3, 64, 64)
+            lff = LearningFromFairness.LfFmodel(train_data, n_epoch, batch_size, learning_rate, image_shape)
+            lff.train()
+
+            # Prediction
+            pred = lff.evaluate(dataset=test_data)
+
         elif method_id == 13:
             # Calibrated equalized odds
 
@@ -337,6 +395,11 @@ miti_result = Mitigation()
 # Response: Bias metrics (json)
 @app.post("/original", response_class=RedirectResponse)
 async def original_metrics(request: Request, background_tasks: BackgroundTasks, data_name: str = Form(...)):
+    global metrics
+    global miti_result
+    metrics = Metrics()
+    miti_result = Mitigation()
+
     # 1. Get data metrics
     if data_name == 'compas':
         data = CompasDataset()
@@ -344,6 +407,12 @@ async def original_metrics(request: Request, background_tasks: BackgroundTasks, 
         data = GermanDataset()
     elif data_name == 'adult':
         data = AdultDataset()
+    elif data_name == 'pubfig':
+        pubfig = PubFigDataset()
+        if not os.path.isdir('./Sample/pubfig'):
+            pubfig.download()
+            return 'There is no image data on your local. We will download pubfig dataset images from source. Please wait a lot of times. After downloaing the images, you can check images on ./Sample/pubfig directory'
+        data = pubfig.to_dataset()
     else:
         print("ERROR")
 

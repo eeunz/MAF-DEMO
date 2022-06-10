@@ -30,13 +30,25 @@
 		<label for="pr">Prejudice remover</label><br>
 		<input type="radio" name="algorithm" id="fb" value="8">
 		<label for="fb">Fair batch</label><br>
-		<input type="radio" name="algorithm" id="ffd" value="9" disabled>
+		{% if data_name == 'pubfig' %}
+			<input type="radio" name="algorithm" id="ffd" value="9">
+		{% else %}
+			<input type="radio" name="algorithm" id="ffd" value="9" disabled>
+		{% endif %}
 		<label for="ffd">Fair feature distillation (Image only)</label><br>
-		<input type="radio" name="algorithm" id="fvae" value="10" disabled>
+		{% if data_name == 'pubfig' %}
+			<input type="radio" name="algorithm" id="fvae" value="10">
+		{% else %}
+			<input type="radio" name="algorithm" id="fvae" value="10" disabled>
+		{% endif %}
 		<label for="fvae">Fair variational auto-encoder(VAE) (Image only)</label><br>
 		<input type="radio" name="algorithm" id="kde" value="11">
 		<label for="kde">Kernel density estimation</label><br>
-		<input type="radio" name="algorithm" id="lff" value="12" disabled>
+		{% if data_name == 'pubfig' %}
+			<input type="radio" name="algorithm" id="lff" value="12">
+		{% else %}
+			<input type="radio" name="algorithm" id="lff" value="12" disabled>
+		{% endif %}
 		<label for="lff">Learning from fairness (Image only)</label><br>
 	</div>
 	<div>

@@ -1,7 +1,13 @@
 import os
 import pandas as pd
+import numpy as np
+import requests
+from tqdm import tqdm
+from glob import glob
+from PIL import Image
 
 from aif360.datasets import StandardDataset
+from Kaif.DataSet import aifData
 
 
 compas_mappings = {
@@ -242,3 +248,156 @@ class AdultDataset(StandardDataset):
 			features_to_keep=features_to_keep,
 			features_to_drop=features_to_drop, na_values=na_values,
 			custom_preprocessing=custom_preprocessing, metadata=metadata)
+
+
+class PubFigDataset:
+	ROOT = './Sample/pubfig'
+	ATTRIBUTE_FILE = './Sample/pubfig_attributes.txt'
+	URL_FILE = './Sample/dev_urls.txt'
+
+	def __init__(self):
+		if not os.path.exists(self.ATTRIBUTE_FILE):
+			print('The attribute file [[ {} ]] is not in directory'.format(self.ATTRIBUTE_FILE))
+			print('It will be downloaded...')
+			response = requests.get('https://www.cs.columbia.edu/CAVE/databases/pubfig/download/pubfig_attributes.txt')
+			with open(self.ATTRIBUTE_FILE, 'wb') as f:
+				for data in tqdm(response.iter_content()):
+					f.write(data)
+			print('Downloaded successfully', end='\n\n')
+
+		if not os.path.exists(self.URL_FILE):
+			print('The attribute file [[ {} ]] is not in directory'.format(self.URL_FILE))
+			print('It will be downloaded...')
+			response = requests.get('https://www.cs.columbia.edu/CAVE/databases/pubfig/download/dev_urls.txt')
+			with open(self.URL_FILE, 'wb') as f:
+				for data in tqdm(response.iter_content()):
+					f.write(data)
+			print('Downloaded successfully', end='\n\n')
+
+
+	def download(self):
+		# Read the files with pandas.DataFrame
+		imgurl_df = pd.read_table(self.URL_FILE, sep='\t', skiprows=[0,1], names=['person', 'imagenum', 'url', 'rect', 'md5sum'])
+		attr_df = pd.read_table(self.ATTRIBUTE_FILE, sep='\t', skiprows=[0,1], names=[
+			'person', 'imagenum', 'Male', 'Asian', 'White', 'Black', 'Baby',
+			'Child', 'Youth', 'Middle Aged', 'Senior', 'Black Hair', 'Blond Hair',
+			'Brown Hair', 'Bald', 'No Eyewear', 'Eyeglasses', 'Sunglasses',
+			'Mustache', 'Smiling', 'Frowning', 'Chubby', 'Blurry', 'Harsh Lighting',
+			'Flash', 'Soft Lighting', 'Outdoor', 'Curly Hair', 'Wavy Hair',
+			'Straight Hair', 'Receding Hairline', 'Bangs', 'Sideburns',
+			'Fully Visible Forehead', 'Partially Visible Forehead',
+			'Obstructed Forehead', 'Bushy Eyebrows', 'Arched Eyebrows',
+			'Narrow Eyes', 'Eyes Open', 'Big Nose', 'Pointy Nose', 'Big Lips',
+			'Mouth Closed', 'Mouth Slightly Open', 'Mouth Wide Open',
+			'Teeth Not Visible', 'No Beard', 'Goatee', 'Round Jaw', 'Double Chin',
+			'Wearing Hat', 'Oval Face', 'Square Face', 'Round Face', 'Color Photo',
+			'Posed Photo', 'Attractive Man', 'Attractive Woman', 'Indian',
+			'Gray Hair', 'Bags Under Eyes', 'Heavy Makeup', 'Rosy Cheeks',
+			'Shiny Skin', 'Pale Skin', "5 o' Clock Shadow",
+			'Strong Nose-Mouth Lines', 'Wearing Lipstick', 'Flushed Face',
+			'High Cheekbones', 'Brown Eyes', 'Wearing Earrings', 'Wearing Necktie','Wearing Necklace'
+			])
+
+		# Merge two DataFrame using (person & imagenum)
+		imgurl_df['key'] = imgurl_df['person'] + '_' + imgurl_df['imagenum'].astype(str)
+		attr_df['key'] = attr_df['person'] + '_' + attr_df['imagenum'].astype(str)
+		merged = imgurl_df.merge(attr_df, how='inner')
+
+		# Before download the images,
+		# make directory for saving the images
+		if not os.path.isdir(self.ROOT):
+			os.mkdir(self.ROOT)
+		print('The pubfig images will be downloaded on [[ {} ]]'.format(self.ROOT))
+
+		# Download images
+		print('{} images downloaded from source urls'.format(len(merged)))
+		print('Download start...')
+
+		for iuk in tqdm(zip(merged.index, merged['url'], merged['key'])):
+			idx, url, key = iuk
+			fn = key + '.jpg'
+			filepath = os.path.join(self.ROOT, fn)
+
+			if os.path.exists(filepath):
+				continue
+
+			try:
+				response = requests.get(url, timeout=2)
+			except requests.exceptions.Timeout:
+				# Timed out
+				# The image link blocked or removed
+				merged = merged.drop(index=idx)
+				continue
+			except:
+				# Unknown URL
+				# Remove the row on 'merged' DataFrame
+				merged = merged.drop(index=idx)
+				continue
+
+			with open(filepath, 'wb') as img:
+				for data in response.iter_content():
+					img.write(data)
+				response.close()
+		print('All images {} download on {} successfully'.format(len(merged), self.ROOT))
+		merged.to_csv('./Sample/pubfig_attr_merged.csv', index=False, encoding='utf-8')
+
+
+	def to_dataset(self):
+		img_files = glob('./Sample/pubfig/*')
+
+		# Load the images
+		img_keys = []
+		img_list = []
+		for ifn in img_files:
+			try:
+				img = Image.open(ifn).resize((64,64))
+			except:
+				continue
+			img = np.asarray(img)
+			key = os.path.basename(ifn).replace('.jpg', '')
+			img_list.append(img)
+			img_keys.append(key)
+
+		# Load the attribute file
+		attribute = pd.read_csv('./Sample/pubfig_attr_merged.csv', encoding='utf-8')
+		attribute = attribute[attribute['key'].isin(img_keys)]
+
+		TARGET_NAME = 'Male'
+		BIAS_NAME = 'Heavy Makeup'
+
+		# Convert Target and Bias to categorical
+		def categorize(score):
+			if score > 0:
+				return 1
+			else:
+				return 0
+
+		vfunc = np.vectorize(categorize)
+
+		target_vect = attribute[TARGET_NAME].to_numpy()
+		target_vect = vfunc(target_vect)
+		bias_vect = attribute[BIAS_NAME].to_numpy()
+		bias_vect = vfunc(bias_vect)
+
+		# Make images to DataFrame (for using aif360)
+		temp = [im.ravel() for im in img_list]
+		temp_df = pd.DataFrame(temp)
+
+		# Add column
+		temp_df[TARGET_NAME] = target_vect
+		temp_df[BIAS_NAME] = bias_vect
+
+		# Make dataset
+		dataset = aifData(df=temp_df, label_name=TARGET_NAME,
+			favorable_classes=[1],
+			protected_attribute_names=[BIAS_NAME],
+			privileged_classes=[[1]])
+
+		return dataset
+
+
+
+if __name__ == "__main__": 
+	ds = PubFigDataset()
+	#ds.download()
+	dataset = ds.to_dataset()
