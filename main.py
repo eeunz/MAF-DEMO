@@ -12,6 +12,10 @@ from Kaif.Algorithms.sota import FairBatch, FairFeatureDistillation, FairnessVAE
 
 from sklearn import svm
 import numpy as np
+import pandas as pd
+import os
+import torch
+from torch import nn, optim
 
 from sample import AdultDataset, GermanDataset, CompasDataset, PubFigDataset
 
@@ -101,16 +105,15 @@ class Mitigation:
         self.result = None
 
     def get_metrics(self, dataset, method_id):
-        # Make privileged group and unprivileged group
-        privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
-        unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
-
-        # Split the dataset
-        dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
-        
         print("Mitigation start")
-        if method_id == 1:
-            # Disparate impact remover
+        if method_id == 1:  # Disparate impact remover
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             fair_mod = Disparate_Impact_Remover(rep_level=0.5, sensitive_attribute=dataset_train.protected_attribute_names[0])
             transf_dataset = fair_mod.fit_transform(dataset_train)
 
@@ -121,8 +124,14 @@ class Mitigation:
             # Prediction
             pred = model.predict(dataset_test.features)
 
-        elif method_id == 2:
-            # Learning fair representation
+        elif method_id == 2:  # Learning fair representation
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             fair_mod = Learning_Fair_Representation(unprivileged_groups=[unprivilege[0]], privileged_groups=[privilege[0]])
             transf_dataset = fair_mod.fit_transform(dataset_train)
             transf_dataset.labels = dataset_train.labels
@@ -134,8 +143,14 @@ class Mitigation:
             # Prediction
             pred = model.predict(dataset_test.features)
 
-        elif method_id == 3:
-            # Reweighing
+        elif method_id == 3:  # Reweighing
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             fair_mod = RW(unprivileged_groups=unprivilege, privileged_groups=privilege)
             transf_dataset = fair_mod.fit_transform(dataset_train)
             transf_dataset.labels = dataset_train.labels
@@ -147,11 +162,16 @@ class Mitigation:
             # Prediction
             pred = model.predict(dataset_test.features)
 
-        #elif method_id == 4:
-            # Adversarial debiasing
+        #elif method_id == 4:  # Adversarial debiasing
             #pass
-        elif method_id == 5:
-            # Gerry fair classifier
+        elif method_id == 5:  # Gerry fair classifier
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             gfc = Gerry_Fair_Classifier()
             gfc.fit(dataset_train)
 
@@ -161,8 +181,14 @@ class Mitigation:
             # Prediction
             pred = transf_dataset.labels
 
-        elif method_id == 6:
-            # Meta fair classifier
+        elif method_id == 6: # Meta fair classifier
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             mfc = Meta_Fair_Classifier()
             mfc = mfc.fit(dataset_train)
 
@@ -172,8 +198,14 @@ class Mitigation:
             # Prediction
             pred = transf_dataset.labels
             
-        elif method_id == 7:
-            # Prejudice remover
+        elif method_id == 7:  # Prejudice remover
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             pr = Prejudice_Remover()
             pr.fit(dataset_train)
 
@@ -183,8 +215,14 @@ class Mitigation:
             # Prediction
             pred = transf_dataset.labels
             
-        elif method_id == 8:
-            # Fair batch
+        elif method_id == 8:  # Fair batch
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             protected_label = dataset_train.protected_attribute_names[0]
             protected_idx = dataset_train.feature_names.index(protected_label)
             biased = dataset_train.features[:, protected_idx]
@@ -205,28 +243,52 @@ class Mitigation:
 
         elif method_id == 9:
             # Fair feature distillation (Image only)
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset['aif_dataset'].protected_attribute_names, dataset['aif_dataset'].privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset['aif_dataset'].protected_attribute_names, dataset['aif_dataset'].unprivileged_protected_attributes)]
+
+            # Flatten the images
+            fltn_img = np.array([img.ravel() for img in dataset['image_list']], dtype='int')
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset['aif_dataset'].split([0.7], shuffle=True)
+
             protected_label = dataset_train.protected_attribute_names[0]
             protected_idx = dataset_train.feature_names.index(protected_label)
             biased = dataset_train.features[:, protected_idx]
 
             # RawDataSet
-            train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels.ravel(), z=biased)
-            test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels.ravel(), z=biased)
+            rds = RawDataSet(x=fltn_img, y=dataset['target'], z=dataset['bias'])
+            #train_data = RawDataSet(x=train_img, y=train_target, z=train_bias)
+            #test_data = RawDataSet(x=test_img, y=test_target, z=test_bias)
 
             # Train
             n_epoch = 20
             batch_size = 64
             learning_rate = 0.01
             image_shape = (3, 64, 64)
-            ffd = FairFeatureDistillation.FFD(train_data, n_epoch, batch_size, learning_rate, image_shape)
+            ffd = FairFeatureDistillation.FFD(rds, n_epoch, batch_size, learning_rate, image_shape)
             ffd.train_teacher()
             ffd.train_student()
 
             # Prediction
-            pred = ffd.evaluation(test_data, image_shape)
+            pred = ffd.evaluation()
 
-        elif method_id == 10:
-            # Fair VAE (Image only)
+            # Make aifData for test
+            test_X = ffd.test_dataset.X.reshape(len(ffd.test_dataset), -1).cpu().detach().numpy()
+            test_y = ffd.test_dataset.y.cpu().detach().numpy()
+            test_z = ffd.test_dataset.z.cpu().detach().numpy()
+            df = pd.DataFrame(test_X)
+            df[protected_label] = test_z
+            df[dataset['aif_dataset'].label_names[0]] = test_y
+
+            dataset_test = aifData(df=df, 
+                label_name=dataset['aif_dataset'].label_names[0], favorable_classes=[dataset['aif_dataset'].favorable_label],
+                protected_attribute_names=dataset['aif_dataset'].protected_attribute_names, privileged_classes=dataset['aif_dataset'].privileged_protected_attributes)
+
+
+        elif method_id == 10:  # Fair VAE (Image only)
+            
             protected_label = dataset_train.protected_attribute_names[0]
             protected_idx = dataset_train.feature_names.index(protected_label)
             biased = dataset_train.features[:, protected_idx]
@@ -247,8 +309,8 @@ class Mitigation:
             # Prediction
             pred = fvae.evaluation(test_data, image_shape)
 
-        elif method_id == 11:
-            # Kernel density_estimation
+        elif method_id == 11:  # Kernel density_estimation
+            
             protected_label = dataset_train.protected_attribute_names[0]
             protected_idx = dataset_train.feature_names.index(protected_label)
             biased = dataset_train.features[:, protected_idx]
@@ -268,8 +330,8 @@ class Mitigation:
             # Prediction
             pred = kde.evaluation(test_data)
 
-        elif method_id == 12:
-            # Learning from fairness (Image only)
+        elif method_id == 12:  # Learning from fairness (Image only)
+            
             protected_label = dataset_train.protected_attribute_names[0]
             protected_idx = dataset_train.feature_names.index(protected_label)
             biased = dataset_train.features[:, protected_idx]
@@ -289,9 +351,7 @@ class Mitigation:
             # Prediction
             pred = lff.evaluate(dataset=test_data)
 
-        elif method_id == 13:
-            # Calibrated equalized odds
-
+        elif method_id == 13:  # Calibrated equalized odds
             # Train
             model = svm.SVC(random_state=777)
             model.fit(dataset_train.features, dataset_train.labels.ravel())
@@ -309,9 +369,7 @@ class Mitigation:
             pred_dataset = cpp.predict(dataset_test_pred)
             pred = pred_dataset.scores
 
-        elif method_id == 14:
-            # Equalized odds
-
+        elif method_id == 14:  # Equalized odds
             # Train
             model = svm.SVC(random_state=777)
             model.fit(dataset_train.features, dataset_train.labels.ravel())
@@ -329,9 +387,7 @@ class Mitigation:
             pred_dataset = eqodds.predict(dataset_test_pred)
             pred = pred_dataset.scores
 
-        elif method_id == 15:
-            # Reject option
-
+        elif method_id == 15:  # Reject option
             # Train
             model = svm.SVC(random_state=777)
             model.fit(dataset_train.features, dataset_train.labels.ravel())
@@ -412,7 +468,8 @@ async def original_metrics(request: Request, background_tasks: BackgroundTasks, 
         if not os.path.isdir('./Sample/pubfig'):
             pubfig.download()
             return 'There is no image data on your local. We will download pubfig dataset images from source. Please wait a lot of times. After downloaing the images, you can check images on ./Sample/pubfig directory'
-        data = pubfig.to_dataset()
+        dataset = pubfig.to_dataset()
+        data = dataset['aif_dataset']
     else:
         print("ERROR")
 
@@ -476,8 +533,12 @@ async def compare_metrics(request: Request, background_tasks: BackgroundTasks, d
         data = GermanDataset()
     elif data_name == 'adult':
         data = AdultDataset()
+    elif data_name == 'pubfig':
+        pubfig = PubFigDataset()
+        data = pubfig.to_dataset()
     else:
-        print("ERROR")
+        print("Error!!! The selected data is not proper.")
+        return "Error!!! The selected data is not proper."
 
     # 3. Make result json
     background_tasks.add_task(miti_result.get_metrics, dataset=data, method_id=algorithm)

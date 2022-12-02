@@ -250,7 +250,7 @@ class AdultDataset(StandardDataset):
 			custom_preprocessing=custom_preprocessing, metadata=metadata)
 
 
-class PubFigDataset:
+class PubFigDataset(StandardDataset):
 	ROOT = './Sample/pubfig'
 	ATTRIBUTE_FILE = './Sample/pubfig_attributes.txt'
 	URL_FILE = './Sample/dev_urls.txt'
@@ -348,10 +348,11 @@ class PubFigDataset:
 		# Load the images
 		img_keys = []
 		img_list = []
-		for ifn in img_files:
+		for ifn in tqdm(img_files):
 			try:
 				img = Image.open(ifn).resize((64,64))
 			except:
+				print(f'"{ifn}" cannot be resized by 64x64')
 				continue
 			img = np.asarray(img)
 			key = os.path.basename(ifn).replace('.jpg', '')
@@ -393,7 +394,15 @@ class PubFigDataset:
 			protected_attribute_names=[BIAS_NAME],
 			privileged_classes=[[1]])
 
-		return dataset
+		result = {
+			'aif_dataset': dataset,
+			'image_list': img_list,
+			'attribute': attribute,
+			'target': target_vect,
+			'bias': bias_vect
+		}
+
+		return result
 
 
 
