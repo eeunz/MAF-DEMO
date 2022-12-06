@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Request, Form, Body, BackgroundTasks, Depends
+from fastapi import FastAPI, Request, Form, Body, BackgroundTasks, Depends, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from typing import Optional
 
 from Kaif.DataSet import RawDataSet, aifData
 from Kaif.Metric import DataMetric, ClassificationMetric
@@ -15,7 +16,8 @@ import numpy as np
 import pandas as pd
 import os
 import torch
-from torch import nn, optim
+from torch import nn
+from torch import optim
 
 from sample import AdultDataset, GermanDataset, CompasDataset, PubFigDataset
 
@@ -28,18 +30,31 @@ templates = Jinja2Templates(directory="templates")
 metrics = None
 miti_result = None
 
+
+@app.get("/", response_class=RedirectResponse)
+async def main(request: Request):
+    return '/data'
+
+
 # Data selection
 @app.get("/data")
 async def data_selection(request: Request):
-    global metrics
-    global miti_result
-    metrics = None
-    miti_result = None
+    #global metrics
+    #global miti_result
+    #metrics = Metrics()
+    #miti_result = Mitigation()
 
     context = {
         'request': request
     }
     return templates.TemplateResponse('data_selection.html', context)
+
+
+@app.post("/file", response_class=RedirectResponse)
+async def upload_file(file: UploadFile):
+    df = pd.read_csv(file.file)
+    df.to_csv("custom.csv", index=False)
+    return "/original"
 
 
 class Metrics:
@@ -288,26 +303,49 @@ class Mitigation:
 
 
         elif method_id == 10:  # Fair VAE (Image only)
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset['aif_dataset'].protected_attribute_names, dataset['aif_dataset'].privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset['aif_dataset'].protected_attribute_names, dataset['aif_dataset'].unprivileged_protected_attributes)]
+
+            # Flatten the images
+            fltn_img = np.array([img.ravel() for img in dataset['image_list']], dtype='int')
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset['aif_dataset'].split([0.7], shuffle=True)
             
             protected_label = dataset_train.protected_attribute_names[0]
             protected_idx = dataset_train.feature_names.index(protected_label)
             biased = dataset_train.features[:, protected_idx]
 
             # RawDataSet
-            train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels.ravel(), z=biased)
-            test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels.ravel(), z=biased)
+            rds = RawDataSet(x=fltn_img, y=dataset['target'], z=dataset['bias'])
+            #train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels.ravel(), z=biased)
+            #test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels.ravel(), z=biased)
 
             # Train
             z_dim = 20
             batch_size = 32
             num_epochs = 20
             image_shape=(3, 64, 64)
-            fvae = FairnessVAE.FairnessVAE(train_data, z_dim, batch_size, num_epochs, image_shape=image_shape)
+            fvae = FairnessVAE.FairnessVAE(rds, z_dim, batch_size, num_epochs, image_shape=image_shape)
             fvae.train_upstream()
             fvae.train_downstream()
 
             # Prediction
-            pred = fvae.evaluation(test_data, image_shape)
+            pred = fvae.evaluation()
+
+            # Make aifData for test
+            test_X = ffd.test_dataset.X.reshape(len(ffd.test_dataset), -1).cpu().detach().numpy()
+            test_y = ffd.test_dataset.y.cpu().detach().numpy()
+            test_z = ffd.test_dataset.z.cpu().detach().numpy()
+            df = pd.DataFrame(test_X)
+            df[protected_label] = test_z
+            df[dataset['aif_dataset'].label_names[0]] = test_y
+
+            dataset_test = aifData(df=df, 
+                label_name=dataset['aif_dataset'].label_names[0], favorable_classes=[dataset['aif_dataset'].favorable_label],
+                protected_attribute_names=dataset['aif_dataset'].protected_attribute_names, privileged_classes=dataset['aif_dataset'].privileged_protected_attributes)
+
 
         elif method_id == 11:  # Kernel density_estimation
             
@@ -450,7 +488,7 @@ miti_result = Mitigation()
 # Request: form data (Data id)
 # Response: Bias metrics (json)
 @app.post("/original", response_class=RedirectResponse)
-async def original_metrics(request: Request, background_tasks: BackgroundTasks, data_name: str = Form(...)):
+async def original_metrics(request: Request, background_tasks: BackgroundTasks, data_name: Optional[str] = Form(None)):
     global metrics
     global miti_result
     metrics = Metrics()
@@ -470,9 +508,12 @@ async def original_metrics(request: Request, background_tasks: BackgroundTasks, 
             return 'There is no image data on your local. We will download pubfig dataset images from source. Please wait a lot of times. After downloaing the images, you can check images on ./Sample/pubfig directory'
         dataset = pubfig.to_dataset()
         data = dataset['aif_dataset']
-    else:
-        print("ERROR")
-
+    else: # Custom file: data_name = filename
+        df = pd.read_csv("custom.csv")
+        data = aifData(df=df, label_name='Target', favorable_classes=[1],
+            protected_attribute_names=['Bias'], privileged_classes=[[1]])
+        #os.remove("custom.csv")
+        
     background_tasks.add_task(metrics.get_metrics, data)
 
     return '/original/{}'.format(data_name)
@@ -536,9 +577,14 @@ async def compare_metrics(request: Request, background_tasks: BackgroundTasks, d
     elif data_name == 'pubfig':
         pubfig = PubFigDataset()
         data = pubfig.to_dataset()
-    else:
-        print("Error!!! The selected data is not proper.")
-        return "Error!!! The selected data is not proper."
+    else:  # Custom file: data_name = filename
+        df = pd.read_csv("custom.csv")
+        data = aifData(df=df, label_name='Target', favorable_classes=[1],
+            protected_attribute_names=['Bias'], privileged_classes=[[1]])
+        os.remove("custom.csv")
+
+        #print("Error!!! The selected data is not proper.")
+        #return "Error!!! The selected data is not proper."
 
     # 3. Make result json
     background_tasks.add_task(miti_result.get_metrics, dataset=data, method_id=algorithm)
