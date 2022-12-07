@@ -48,6 +48,11 @@
 			<h2>Data metrics chart</h2>
 			<figure class="highcharts-figure">
 				<div>
+					<div id="tsne" class="scatter"></div>
+				</div>
+			</figure>
+			<figure class="highcharts-figure">
+				<div>
 					<div id="data_n_bar" class="bar"></div>
 					<div id="data_n_bar3d" class="bar3d"></div>
 					<div id="data_chart_bar" class="bar"></div>
@@ -75,6 +80,14 @@
 
 		<!-- Resource Script -->
 		<script type="text/javascript">
+			const tsne_priv = {{ data.privileged.TSNE }};
+			const tsne_unpriv = {{ data.unprivileged.TSNE }};
+
+			const tsneChart = new ScatterChart('tsne', 'T-SNE');
+			tsneChart.push(tsne_priv, {color: "rgba(129, 199, 233, 0.2)", name: "Privileged"});
+			tsneChart.push(tsne_unpriv, {color: "rgba(255, 187, 0, 0.2)", name: "Unprivileged"});
+			tsneChart.show();
+
 			const n_privileged = [{{ data.privileged.num_negatives }}, {{ data.privileged.num_positives }}];
 			const n_unprivileged = [{{ data.unprivileged.num_negatives }}, {{ data.unprivileged.num_positives }}];
 

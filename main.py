@@ -12,6 +12,7 @@ from MAF.Algorithms.Postprocessing import Calibrated_EqOdds, EqualizedOdds, Reje
 from MAF.Algorithms.sota import FairBatch, FairFeatureDistillation, FairnessVAE, KernelDensityEstimator, LearningFromFairness
 
 from sklearn import svm
+from sklearn.manifold import TSNE
 import numpy as np
 import pandas as pd
 import os
@@ -68,6 +69,27 @@ class Metrics:
         privilege = {key: value[0] for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)}
         unprivilege = {key: value[0] for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)}
 
+        # For T-SNE
+        priv_val = dataset.privileged_protected_attributes[0][0]
+        unpriv_val = dataset.unprivileged_protected_attributes[0][0]
+
+        df = dataset.convert_to_dataframe()[0]
+        df_priv = df.loc[df[dataset.protected_attribute_names[0]] == priv_val]
+        df_unpriv = df.loc[df[dataset.protected_attribute_names[0]] == unpriv_val]
+        ds_priv = aifData(df=df_priv, label_name=dataset.label_names[0],
+            favorable_classes=[dataset.favorable_label],
+            protected_attribute_names=dataset.protected_attribute_names,
+            privileged_classes=dataset.privileged_protected_attributes)
+        ds_unpriv = aifData(df=df_unpriv, label_name=dataset.label_names[0],
+            favorable_classes=[dataset.favorable_label],
+            protected_attribute_names=dataset.protected_attribute_names,
+            privileged_classes=dataset.privileged_protected_attributes)
+
+        tsne_priv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(ds_priv.features)
+        tsne_unpriv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(ds_unpriv.features)
+        tsne_priv = tsne_priv.tolist()
+        tsne_unpriv = tsne_unpriv.tolist()
+
         ## train model
         model = svm.SVC(random_state=777)
         model.fit(dataset.features, dataset.labels.ravel())
@@ -90,10 +112,12 @@ class Metrics:
                 "privileged": {
                     "num_negatives": data_metric.num_negative(privileged=True),
                     "num_positives": data_metric.num_positive(privileged=True),
+                    "TSNE": tsne_priv
                 },
                 "unprivileged": {
                     "num_negatives": data_metric.num_negative(privileged=False),
                     "num_positives": data_metric.num_positive(privileged=False),
+                    "TSNE": tsne_unpriv
                 },
                 "base_rate": data_metric.base_rate(),
                 "statistical_parity_difference": data_metric.statistical_parity_difference(),
@@ -554,10 +578,12 @@ async def check_metrics(request: Request, data_name: str):
                 "privileged": {
                     "num_negatives": metrics.result['data']['privileged']['num_negatives'],
                     "num_positives": metrics.result['data']['privileged']['num_positives'],
+                    "TSNE": metrics.result['data']['privileged']['TSNE']
                 },
                 "unprivileged": {
                     "num_negatives": metrics.result['data']['unprivileged']['num_negatives'],
-                    "num_positives": metrics.result['data']['unprivileged']['num_positives']
+                    "num_positives": metrics.result['data']['unprivileged']['num_positives'],
+                    "TSNE": metrics.result['data']['unprivileged']['TSNE']
                 },
                 "base_rate": metrics.result['data']['base_rate'],
                 "statistical_parity_difference": metrics.result['data']['statistical_parity_difference'],
