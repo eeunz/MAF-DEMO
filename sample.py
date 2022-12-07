@@ -7,7 +7,7 @@ from glob import glob
 from PIL import Image
 
 from aif360.datasets import StandardDataset
-from Kaif.DataSet import aifData
+from MAF.DataSet import aifData
 
 
 compas_mappings = {

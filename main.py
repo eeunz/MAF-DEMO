@@ -4,12 +4,12 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from typing import Optional
 
-from Kaif.DataSet import RawDataSet, aifData
-from Kaif.Metric import DataMetric, ClassificationMetric
-from Kaif.Algorithms.Preprocessing import Disparate_Impact_Remover, Learning_Fair_Representation, RW
-from Kaif.Algorithms.Inprocessing import Gerry_Fair_Classifier, Meta_Fair_Classifier, Prejudice_Remover
-from Kaif.Algorithms.Postprocessing import Calibrated_EqOdds, EqualizedOdds, RejectOption
-from Kaif.Algorithms.sota import FairBatch, FairFeatureDistillation, FairnessVAE, KernelDensityEstimator, LearningFromFairness
+from MAF.DataSet import RawDataSet, aifData
+from MAF.Metric import DataMetric, ClassificationMetric
+from MAF.Algorithms.Preprocessing import Disparate_Impact_Remover, Learning_Fair_Representation, RW
+from MAF.Algorithms.Inprocessing import Gerry_Fair_Classifier, Meta_Fair_Classifier, Prejudice_Remover
+from MAF.Algorithms.Postprocessing import Calibrated_EqOdds, EqualizedOdds, RejectOption
+from MAF.Algorithms.sota import FairBatch, FairFeatureDistillation, FairnessVAE, KernelDensityEstimator, LearningFromFairness
 
 from sklearn import svm
 import numpy as np
