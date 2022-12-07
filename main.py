@@ -76,33 +76,51 @@ class Metrics:
         pred = model.predict(dataset.features)
 
         ## metric
-        metric = ClassificationMetric(dataset=dataset, 
+        data_metric = DataMetric(dataset, privilege=privilege, unprivilege=unprivilege)
+        cls_metric = ClassificationMetric(dataset=dataset, 
             privilege=privilege, unprivilege=unprivilege, 
             prediction_vector=pred, target_label_name=dataset.label_names[0])
-        perfm = metric.performance_measures()
+        perfm = cls_metric.performance_measures()
 
         print("train model end")
 
         # 3. Make result json
         context = {
-            "recall": perfm['TPR'],
-            "true_negative_rate": perfm['TNR'],
-            "false_positive_rate": perfm['FPR'],
-            "false_negative_rate": perfm['FNR'],
-            "precision": perfm['PPV'],
-            "negative_predictive_value": perfm['NPV'],
-            "false_discovery_rate": perfm['FDR'],
-            "false_omission_rate": perfm['FOR'],
-            "accuracy": perfm['ACC'],
-            "error_rate": metric.error_rate(),
-            "average_odds_difference": metric.average_odds_difference(),
-            "average_abs_odds_difference": metric.average_abs_odds_difference(),
-            "selection_rate": metric.selection_rate(),
-            "disparate_impact": metric.disparate_impact(),
-            "statistical_parity_difference": metric.statistical_parity_difference(),
-            "generalized_entropy_index": metric.generalized_entropy_index(),
-            "theil_index": metric.theil_index(),
-            "equal_opportunity_difference": metric.equal_opportunity_difference()
+            "data": {
+                "privileged": {
+                    "num_negatives": data_metric.num_negative(privileged=True),
+                    "num_positives": data_metric.num_positive(privileged=True),
+                },
+                "unprivileged": {
+                    "num_negatives": data_metric.num_negative(privileged=False),
+                    "num_positives": data_metric.num_positive(privileged=False),
+                },
+                "base_rate": data_metric.base_rate(),
+                "statistical_parity_difference": data_metric.statistical_parity_difference(),
+                "consistency": data_metric.consistency()
+            },
+            "performance": {
+                "recall": perfm['TPR'],
+                "true_negative_rate": perfm['TNR'],
+                "false_positive_rate": perfm['FPR'],
+                "false_negative_rate": perfm['FNR'],
+                "precision": perfm['PPV'],
+                "negative_predictive_value": perfm['NPV'],
+                "false_discovery_rate": perfm['FDR'],
+                "false_omission_rate": perfm['FOR'],
+                "accuracy": perfm['ACC'],
+            },
+            "classify": {
+                "error_rate": cls_metric.error_rate(),
+                "average_odds_difference": cls_metric.average_odds_difference(),
+                "average_abs_odds_difference": cls_metric.average_abs_odds_difference(),
+                "selection_rate": cls_metric.selection_rate(),
+                "disparate_impact": cls_metric.disparate_impact(),
+                "statistical_parity_difference": cls_metric.statistical_parity_difference(),
+                "generalized_entropy_index": cls_metric.generalized_entropy_index(),
+                "theil_index": cls_metric.theil_index(),
+                "equal_opportunity_difference": cls_metric.equal_opportunity_difference()
+            }
         }
 
         self.result = context
@@ -455,24 +473,28 @@ class Mitigation:
 
         # 3. Make result
         context = {
-            "recall": perfm['TPR'],
-            "true_negative_rate": perfm['TNR'],
-            "false_positive_rate": perfm['FPR'],
-            "false_negative_rate": perfm['FNR'],
-            "precision": perfm['PPV'],
-            "negative_predictive_value": perfm['NPV'],
-            "false_discovery_rate": perfm['FDR'],
-            "false_omission_rate": perfm['FOR'],
-            "accuracy": perfm['ACC'],
-            "error_rate": transf_metric.error_rate(),
-            "average_odds_difference": transf_metric.average_odds_difference(),
-            "average_abs_odds_difference": transf_metric.average_abs_odds_difference(),
-            "selection_rate": transf_metric.selection_rate(),
-            "disparate_impact": transf_metric.disparate_impact(),
-            "statistical_parity_difference": transf_metric.statistical_parity_difference(),
-            "generalized_entropy_index": transf_metric.generalized_entropy_index(),
-            "theil_index": transf_metric.theil_index(),
-            "equal_opportunity_difference": transf_metric.equal_opportunity_difference()
+            "performance": {
+                "recall": perfm['TPR'],
+                "true_negative_rate": perfm['TNR'],
+                "false_positive_rate": perfm['FPR'],
+                "false_negative_rate": perfm['FNR'],
+                "precision": perfm['PPV'],
+                "negative_predictive_value": perfm['NPV'],
+                "false_discovery_rate": perfm['FDR'],
+                "false_omission_rate": perfm['FOR'],
+                "accuracy": perfm['ACC']
+            },
+            "classify": {
+                "error_rate": transf_metric.error_rate(),
+                "average_odds_difference": transf_metric.average_odds_difference(),
+                "average_abs_odds_difference": transf_metric.average_abs_odds_difference(),
+                "selection_rate": transf_metric.selection_rate(),
+                "disparate_impact": transf_metric.disparate_impact(),
+                "statistical_parity_difference": transf_metric.statistical_parity_difference(),
+                "generalized_entropy_index": transf_metric.generalized_entropy_index(),
+                "theil_index": transf_metric.theil_index(),
+                "equal_opportunity_difference": transf_metric.equal_opportunity_difference()
+            }
         }
 
         self.result = context
@@ -528,24 +550,41 @@ async def check_metrics(request: Request, data_name: str):
         context = {
             "request": request,
             "data_name": data_name,
-            "recall": metrics.result['recall'],
-            "true_negative_rate": metrics.result['true_negative_rate'],
-            "false_positive_rate": metrics.result['false_positive_rate'],
-            "false_negative_rate": metrics.result['false_negative_rate'],
-            "precision": metrics.result['precision'],
-            "negative_predictive_value": metrics.result['negative_predictive_value'],
-            "false_discovery_rate": metrics.result['false_discovery_rate'],
-            "false_omission_rate": metrics.result['false_omission_rate'],
-            "accuracy": metrics.result['accuracy'],
-            "error_rate": metrics.result['error_rate'],
-            "average_odds_difference": metrics.result['average_odds_difference'],
-            "average_abs_odds_difference": metrics.result['average_abs_odds_difference'],
-            "selection_rate": metrics.result['selection_rate'],
-            "disparate_impact": metrics.result['disparate_impact'],
-            "statistical_parity_difference": metrics.result['statistical_parity_difference'],
-            "generalized_entropy_index": metrics.result['generalized_entropy_index'],
-            "theil_index": metrics.result['theil_index'],
-            "equal_opportunity_difference": metrics.result['equal_opportunity_difference']
+            "data": {
+                "privileged": {
+                    "num_negatives": metrics.result['data']['privileged']['num_negatives'],
+                    "num_positives": metrics.result['data']['privileged']['num_positives'],
+                },
+                "unprivileged": {
+                    "num_negatives": metrics.result['data']['unprivileged']['num_negatives'],
+                    "num_positives": metrics.result['data']['unprivileged']['num_positives']
+                },
+                "base_rate": metrics.result['data']['base_rate'],
+                "statistical_parity_difference": metrics.result['data']['statistical_parity_difference'],
+                "consistency": metrics.result['data']['consistency']
+            },
+            "performance": {
+                "recall": metrics.result['performance']['recall'],
+                "true_negative_rate": metrics.result['performance']['true_negative_rate'],
+                "false_positive_rate": metrics.result['performance']['false_positive_rate'],
+                "false_negative_rate": metrics.result['performance']['false_negative_rate'],
+                "precision": metrics.result['performance']['precision'],
+                "negative_predictive_value": metrics.result['performance']['negative_predictive_value'],
+                "false_discovery_rate": metrics.result['performance']['false_discovery_rate'],
+                "false_omission_rate": metrics.result['performance']['false_omission_rate'],
+                "accuracy": metrics.result['performance']['accuracy'],
+            },
+            "classify": {
+                "error_rate": metrics.result['classify']['error_rate'],
+                "average_odds_difference": metrics.result['classify']['average_odds_difference'],
+                "average_abs_odds_difference": metrics.result['classify']['average_abs_odds_difference'],
+                "selection_rate": metrics.result['classify']['selection_rate'],
+                "disparate_impact": metrics.result['classify']['disparate_impact'],
+                "statistical_parity_difference": metrics.result['classify']['statistical_parity_difference'],
+                "generalized_entropy_index": metrics.result['classify']['generalized_entropy_index'],
+                "theil_index": metrics.result['classify']['theil_index'],
+                "equal_opportunity_difference": metrics.result['classify']['equal_opportunity_difference']
+            }
         }
         return templates.TemplateResponse('metrics.html', context=context)
 
