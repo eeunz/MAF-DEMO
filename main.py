@@ -70,6 +70,7 @@ class Metrics:
         unprivilege = {key: value[0] for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)}
 
         # For T-SNE
+        """
         priv_val = dataset.privileged_protected_attributes[0][0]
         unpriv_val = dataset.unprivileged_protected_attributes[0][0]
 
@@ -89,6 +90,7 @@ class Metrics:
         tsne_unpriv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(ds_unpriv.features)
         tsne_priv = tsne_priv.tolist()
         tsne_unpriv = tsne_unpriv.tolist()
+        """
 
         ## train model
         model = svm.SVC(random_state=777)
@@ -112,12 +114,14 @@ class Metrics:
                 "privileged": {
                     "num_negatives": data_metric.num_negative(privileged=True),
                     "num_positives": data_metric.num_positive(privileged=True),
-                    "TSNE": tsne_priv
+                    #"TSNE": tsne_priv
+                    "TSNE": [1, 2, 3]
                 },
                 "unprivileged": {
                     "num_negatives": data_metric.num_negative(privileged=False),
                     "num_positives": data_metric.num_positive(privileged=False),
-                    "TSNE": tsne_unpriv
+                    #"TSNE": tsne_unpriv
+                    "TSNE": [1, 2, 3]
                 },
                 "base_rate": data_metric.base_rate(),
                 "statistical_parity_difference": data_metric.statistical_parity_difference(),
@@ -295,8 +299,8 @@ class Mitigation:
             pred = FairBatch.evaluation(model, dataset_test, cls2val)
 
             # Transformed dataset
-            transf_dataset = dataset_test.copy(deepcopy=True)
-            transf_dataset.labels = np.array(pred).reshape(len(pred), -1)
+            #transf_dataset = dataset_test.copy(deepcopy=True)
+            #transf_dataset.labels = np.array(pred).reshape(len(pred), -1)
 
         elif method_id == 9:
             # Fair feature distillation (Image only)
@@ -390,6 +394,12 @@ class Mitigation:
 
 
         elif method_id == 11:  # Kernel density_estimation
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
             
             protected_label = dataset_train.protected_attribute_names[0]
             protected_idx = dataset_train.feature_names.index(protected_label)
@@ -411,6 +421,12 @@ class Mitigation:
             pred = kde.evaluation(test_data)
 
         elif method_id == 12:  # Learning from fairness (Image only)
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
             
             protected_label = dataset_train.protected_attribute_names[0]
             protected_idx = dataset_train.feature_names.index(protected_label)
@@ -432,6 +448,13 @@ class Mitigation:
             pred = lff.evaluate(dataset=test_data)
 
         elif method_id == 13:  # Calibrated equalized odds
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             # Train
             model = svm.SVC(random_state=777)
             model.fit(dataset_train.features, dataset_train.labels.ravel())
@@ -450,6 +473,13 @@ class Mitigation:
             pred = pred_dataset.scores
 
         elif method_id == 14:  # Equalized odds
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             # Train
             model = svm.SVC(random_state=777)
             model.fit(dataset_train.features, dataset_train.labels.ravel())
@@ -468,6 +498,13 @@ class Mitigation:
             pred = pred_dataset.scores
 
         elif method_id == 15:  # Reject option
+            # Make privileged group and unprivileged group
+            privilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)]
+            unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
+
+            # Split the dataset
+            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+
             # Train
             model = svm.SVC(random_state=777)
             model.fit(dataset_train.features, dataset_train.labels.ravel())
