@@ -291,12 +291,16 @@ class Mitigation:
             # RawDataSet
             train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels, z=biased)
 
+            protected_idx_test = dataset_test.feature_names.index(protected_label)
+            biased_test = dataset_test.features[:, protected_idx_test]
+            test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels, z=biased_test)
+
             # Prediction
             batch_size = 256
             alpha = 0.1
             fairness = 'eqodds'
             model, cls2val, _ = FairBatch.train(train_data, batch_size, alpha, fairness)
-            pred = FairBatch.evaluation(model, dataset_test, cls2val)
+            pred = FairBatch.evaluation(model, test_data, cls2val)
 
             # Transformed dataset
             #transf_dataset = dataset_test.copy(deepcopy=True)
@@ -399,26 +403,41 @@ class Mitigation:
             unprivilege = [{key: value[0]} for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)]
 
             # Split the dataset
-            dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
+            #dataset_train, dataset_test = dataset.split([0.7], shuffle=True)
             
-            protected_label = dataset_train.protected_attribute_names[0]
-            protected_idx = dataset_train.feature_names.index(protected_label)
-            biased = dataset_train.features[:, protected_idx]
+            protected_label = dataset.protected_attribute_names[0]
+            protected_idx = dataset.feature_names.index(protected_label)
+            biased = dataset.features[:, protected_idx]
 
             # RawDataSet
-            train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels.ravel(), z=biased)
-            test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels.ravel(), z=biased)
+            rds = RawDataSet(x=dataset.features, y=dataset.labels.ravel(), z=biased)
+            #train_data = RawDataSet(x=dataset_train.features, y=dataset_train.labels.ravel(), z=biased)
+            #test_data = RawDataSet(x=dataset_test.features, y=dataset_test.labels.ravel(), z=biased)
 
             # Train
             fairness_type = 'DP'
             batch_size = 64
             n_epoch = 20
             learning_rate = 0.01
-            kde = KernelDensityEstimator.KDEmodel(train_data, fairness_type, batch_size, n_epoch, learning_rate)
+            kde = KernelDensityEstimator.KDEmodel(rds, fairness_type, batch_size, n_epoch, learning_rate)
             kde.train()
 
             # Prediction
-            pred = kde.evaluation(test_data)
+            pred = kde.evaluation(all_data=False)
+            
+            # Data Make
+            test_X = kde.test_data.X.reshape(len(kde.test_data), -1).cpu().detach().numpy()
+            test_y = kde.test_data.y.cpu().detach().numpy()
+            test_z = kde.test_data.z.cpu().detach().numpy()
+            df = pd.DataFrame(test_X)
+            df[protected_label] = test_z
+            df[dataset.label_names[0]] = test_y
+
+            dataset_test = aifData(df=df,
+                label_name=dataset.label_names[0], favorable_classes=[dataset.favorable_label],
+                protected_attribute_names=[dataset.protected_attribute_names[0]], privileged_classes=dataset.privileged_protected_attributes)
+
+
 
         elif method_id == 12:  # Learning from fairness (Image only)
             # Make privileged group and unprivileged group
@@ -512,7 +531,7 @@ class Mitigation:
             # Prediction
             predict = model.predict(dataset_test.features)
             dataset_test_pred = dataset_test.copy(deepcopy=True)
-            dataset_test_pred.labels = np.array(pred).reshape(len(pred), -1)
+            dataset_test_pred.labels = np.array(predict).reshape(len(predict), -1)
 
             # Post-processing
             ro = RejectOption([unprivilege[0]], [privilege[0]])
