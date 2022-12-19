@@ -1,0 +1,190 @@
+<!DOCTYPE HTML>
+<!--
+	Hyperspace by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Algorithm selection - MAF</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="/static/assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="/static/assets/css/noscript.css" /></noscript>
+	</head>
+	<body class="is-preload">
+
+		<!-- Header -->
+			<header id="header">
+				<a href="/" class="title">MAF</a>
+				<nav>
+					<ul>
+						<li><a href="/">Home</a></li>
+						<li><a href="/data">Data</a></li>
+						<li><a href="/original/{{ data_name }}">Metrics</a></li>
+						<li><a href="#" class="active">Algorithms</a></li>
+						<li><a href="#">Compare</a></li>
+					</ul>
+				</nav>
+			</header>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<section id="main" class="wrapper">
+						<div class="inner">
+							<div class="row">
+								<div class="col-6 col-12-medium">
+									<ul class="actions">
+										<li><a href="/" class="button fit">Home</a></li>
+									</ul>
+								</div>
+							</div>
+							<h1 class="major">Algorithm selection</h1>
+							<!-- Text -->
+								<section>
+									<ul class="alt">
+										<li><b>Dataset</b>: {{ data_name }}</li>
+									</ul>
+								</section>
+							<section>
+								<form action="/mitigation/{{data_name}}" method="post" enctype="multipart/form-data">
+									<h2>Preprocessing</h2>
+										<ul class="alt">
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="dir" name="algorithm" value="1">
+													<label for="dir">Disparate impact remover</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="lfr" name="algorithm" value="2">
+													<label for="lfr">Learning fair representation</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="rw" name="algorithm" value="3">
+													<label for="rw">Reweighting</label>
+												</div>
+											</li>
+										</ul>
+									<h2>Inprocessing</h2>
+										<ul class="alt">
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="gfc" name="algorithm" value="5">
+													<label for="gfc">Gerry fair classifier</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="mfc" name="algorithm" value="6">
+													<label for="mfc">Meta fair classifier</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="pr" name="algorithm" value="7">
+													<label for="pr">Prejudice remover</label>
+												</div>
+											</li>
+										</ul>
+									<h3>State of the art</h3>
+										<ul class="alt">
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="fb" name="algorithm" value="8">
+													<label for="fb">Fair batch</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													{% if data_name == 'pubfig' %}
+														<input type="radio" id="ffd" name="algorithm" value="9">
+													{% else %}
+														<input type="radio" id="ffd" name="algorithm" value="9" disabled>
+													{% endif %}
+													<label for="ffd">Fair feature distillation (Image only)</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													{% if data_name == 'pubfig' %}
+														<input type="radio" id="fvae" name="algorithm" value="10">
+													{% else %}
+														<input type="radio" id="fvae" name="algorithm" value="10" disabled>
+													{% endif %}
+													<label for="fvae">Fair variational auto-encoder(VAE) (Image only)</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="kde" name="algorithm" value="11">
+													<label for="kde">Kernel density estimation</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													{% if data_name == 'pubfig' %}
+														<input type="radio" id="lff" name="algorithm" value="12">
+													{% else %}
+														<input type="radio" id="lff" name="algorithm" value="12" disabled>
+													{% endif %}
+													<label for="lff">Learning from fairness (Image only)</label>
+												</div>
+											</li>
+										</ul>
+									<h2>Postprocessing</h2>
+										<ul class="alt">
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="ceo" name="algorithm" value="13">
+													<label for="ceo">Calibrated equalized odds</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="eo" name="algorithm" value="14">
+													<label for="eo">Equalized odds</label>
+												</div>
+											</li>
+											<li>
+												<div class="col-4 col-12-small">
+													<input type="radio" id="ro" name="algorithm" value="15">
+													<label for="ro">Reject option</label>
+												</div>
+											</li>
+										</ul>
+									<!-- Submit button -->
+										<div class="col-12">
+											<input type="submit" value="Mitigation start" class="primary" />
+										</div>
+								</form>
+							</section>
+						</div>
+					</section>
+			</div>
+
+		<!-- Footer -->
+			<footer id="footer" class="wrapper alt">
+				<div class="inner">
+					<ul class="menu">
+						<li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+					</ul>
+				</div>
+			</footer>
+
+		<!-- Scripts -->
+			<script src="/static/assets/js/jquery.min.js"></script>
+			<script src="/static/assets/js/jquery.scrollex.min.js"></script>
+			<script src="/static/assets/js/jquery.scrolly.min.js"></script>
+			<script src="/static/assets/js/browser.min.js"></script>
+			<script src="/static/assets/js/breakpoints.min.js"></script>
+			<script src="/static/assets/js/util.js"></script>
+			<script src="/static/assets/js/main.js"></script>
+
+	</body>
+</html>

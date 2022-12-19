@@ -32,23 +32,27 @@ metrics = None
 miti_result = None
 
 
-@app.get("/", response_class=RedirectResponse)
+# Main page
+@app.get("/")
 async def main(request: Request):
-    return '/data'
+    context = {
+        'request': request
+    }
+    return templates.TemplateResponse('index.html', context)
 
 
 # Data selection
 @app.get("/data")
 async def data_selection(request: Request):
-    #global metrics
-    #global miti_result
-    #metrics = Metrics()
-    #miti_result = Mitigation()
+    global metrics
+    global miti_result
+    metrics = Metrics()
+    miti_result = Mitigation()
 
     context = {
         'request': request
     }
-    return templates.TemplateResponse('data_selection.html', context)
+    return templates.TemplateResponse('data_select.html', context)
 
 
 @app.post("/file", response_class=RedirectResponse)
@@ -63,34 +67,43 @@ class Metrics:
         self.result = None
 
 
-    def get_metrics(self, dataset):
+    def get_metrics(self, dataset, tsne):
         print("train model start")
         # 2. Get classification metrics
         privilege = {key: value[0] for key, value in zip(dataset.protected_attribute_names, dataset.privileged_protected_attributes)}
+        print("Privileged values: ", privilege)
         unprivilege = {key: value[0] for key, value in zip(dataset.protected_attribute_names, dataset.unprivileged_protected_attributes)}
+        print("Unprivileged values: ", unprivilege)
+
+        print("T-SNE option value:", tsne)
+        print("T-SNE option type:", type(tsne))
 
         # For T-SNE
-        """
-        priv_val = dataset.privileged_protected_attributes[0][0]
-        unpriv_val = dataset.unprivileged_protected_attributes[0][0]
+        if tsne == "on":
+            print("T-SNE analysis start")
+            priv_val = dataset.privileged_protected_attributes[0][0]
+            unpriv_val = dataset.unprivileged_protected_attributes[0][0]
 
-        df = dataset.convert_to_dataframe()[0]
-        df_priv = df.loc[df[dataset.protected_attribute_names[0]] == priv_val]
-        df_unpriv = df.loc[df[dataset.protected_attribute_names[0]] == unpriv_val]
-        ds_priv = aifData(df=df_priv, label_name=dataset.label_names[0],
-            favorable_classes=[dataset.favorable_label],
-            protected_attribute_names=dataset.protected_attribute_names,
-            privileged_classes=dataset.privileged_protected_attributes)
-        ds_unpriv = aifData(df=df_unpriv, label_name=dataset.label_names[0],
-            favorable_classes=[dataset.favorable_label],
-            protected_attribute_names=dataset.protected_attribute_names,
-            privileged_classes=dataset.privileged_protected_attributes)
+            df = dataset.convert_to_dataframe()[0]
+            df_priv = df.loc[df[dataset.protected_attribute_names[0]] == priv_val]
+            df_unpriv = df.loc[df[dataset.protected_attribute_names[0]] == unpriv_val]
+            ds_priv = aifData(df=df_priv, label_name=dataset.label_names[0],
+                favorable_classes=[dataset.favorable_label],
+                protected_attribute_names=dataset.protected_attribute_names,
+                privileged_classes=dataset.privileged_protected_attributes)
+            ds_unpriv = aifData(df=df_unpriv, label_name=dataset.label_names[0],
+                favorable_classes=[dataset.favorable_label],
+                protected_attribute_names=dataset.protected_attribute_names,
+                privileged_classes=dataset.privileged_protected_attributes)
 
-        tsne_priv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(ds_priv.features)
-        tsne_unpriv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(ds_unpriv.features)
-        tsne_priv = tsne_priv.tolist()
-        tsne_unpriv = tsne_unpriv.tolist()
-        """
+            tsne_priv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(ds_priv.features)
+            tsne_unpriv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(ds_unpriv.features)
+            tsne_priv = tsne_priv.tolist()
+            tsne_unpriv = tsne_unpriv.tolist()
+            print("T-SNE analysis end")
+        else:
+            tsne_priv = [[1,1]]
+            tsne_unpriv = [[0,0]]
 
         ## train model
         model = svm.SVC(random_state=777)
@@ -111,43 +124,42 @@ class Metrics:
         # 3. Make result json
         context = {
             "data": {
+                "protected": dataset.protected_attribute_names[0],
                 "privileged": {
                     "num_negatives": data_metric.num_negative(privileged=True),
                     "num_positives": data_metric.num_positive(privileged=True),
-                    #"TSNE": tsne_priv
-                    "TSNE": [1, 2, 3]
+                    "TSNE": tsne_priv
                 },
                 "unprivileged": {
                     "num_negatives": data_metric.num_negative(privileged=False),
                     "num_positives": data_metric.num_positive(privileged=False),
-                    #"TSNE": tsne_unpriv
-                    "TSNE": [1, 2, 3]
+                    "TSNE": tsne_unpriv
                 },
-                "base_rate": data_metric.base_rate(),
-                "statistical_parity_difference": data_metric.statistical_parity_difference(),
-                "consistency": data_metric.consistency()
+                "base_rate": round(data_metric.base_rate(), 3),
+                "statistical_parity_difference": round(data_metric.statistical_parity_difference(), 3),
+                "consistency": round(data_metric.consistency(), 3)
             },
             "performance": {
-                "recall": perfm['TPR'],
-                "true_negative_rate": perfm['TNR'],
-                "false_positive_rate": perfm['FPR'],
-                "false_negative_rate": perfm['FNR'],
-                "precision": perfm['PPV'],
-                "negative_predictive_value": perfm['NPV'],
-                "false_discovery_rate": perfm['FDR'],
-                "false_omission_rate": perfm['FOR'],
-                "accuracy": perfm['ACC'],
+                "recall": round(perfm['TPR'], 3),
+                "true_negative_rate": round(perfm['TNR'], 3),
+                "false_positive_rate": round(perfm['FPR'], 3),
+                "false_negative_rate": round(perfm['FNR'], 3),
+                "precision": round(perfm['PPV'], 3),
+                "negative_predictive_value": round(perfm['NPV'], 3),
+                "false_discovery_rate": round(perfm['FDR'], 3),
+                "false_omission_rate": round(perfm['FOR'], 3),
+                "accuracy": round(perfm['ACC'], 3),
             },
             "classify": {
-                "error_rate": cls_metric.error_rate(),
-                "average_odds_difference": cls_metric.average_odds_difference(),
-                "average_abs_odds_difference": cls_metric.average_abs_odds_difference(),
-                "selection_rate": cls_metric.selection_rate(),
-                "disparate_impact": cls_metric.disparate_impact(),
-                "statistical_parity_difference": cls_metric.statistical_parity_difference(),
-                "generalized_entropy_index": cls_metric.generalized_entropy_index(),
-                "theil_index": cls_metric.theil_index(),
-                "equal_opportunity_difference": cls_metric.equal_opportunity_difference()
+                "error_rate": round(cls_metric.error_rate(), 3),
+                "average_odds_difference": round(cls_metric.average_odds_difference(), 3),
+                "average_abs_odds_difference": round(cls_metric.average_abs_odds_difference(), 3),
+                "selection_rate": round(cls_metric.selection_rate(), 3),
+                "disparate_impact": round(cls_metric.disparate_impact(), 3),
+                "statistical_parity_difference": round(cls_metric.statistical_parity_difference(), 3),
+                "generalized_entropy_index": round(cls_metric.generalized_entropy_index(), 3),
+                "theil_index": round(cls_metric.theil_index(), 3),
+                "equal_opportunity_difference": round(cls_metric.equal_opportunity_difference(), 3)
             }
         }
 
@@ -554,26 +566,26 @@ class Mitigation:
         # 3. Make result
         context = {
             "performance": {
-                "recall": perfm['TPR'],
-                "true_negative_rate": perfm['TNR'],
-                "false_positive_rate": perfm['FPR'],
-                "false_negative_rate": perfm['FNR'],
-                "precision": perfm['PPV'],
-                "negative_predictive_value": perfm['NPV'],
-                "false_discovery_rate": perfm['FDR'],
-                "false_omission_rate": perfm['FOR'],
-                "accuracy": perfm['ACC']
+                "recall": round(perfm['TPR'], 3),
+                "true_negative_rate": round(perfm['TNR'], 3),
+                "false_positive_rate": round(perfm['FPR'], 3),
+                "false_negative_rate": round(perfm['FNR'], 3),
+                "precision": round(perfm['PPV'], 3),
+                "negative_predictive_value": round(perfm['NPV'], 3),
+                "false_discovery_rate": round(perfm['FDR'], 3),
+                "false_omission_rate": round(perfm['FOR'], 3),
+                "accuracy": round(perfm['ACC'], 3)
             },
             "classify": {
-                "error_rate": transf_metric.error_rate(),
-                "average_odds_difference": transf_metric.average_odds_difference(),
-                "average_abs_odds_difference": transf_metric.average_abs_odds_difference(),
-                "selection_rate": transf_metric.selection_rate(),
-                "disparate_impact": transf_metric.disparate_impact(),
-                "statistical_parity_difference": transf_metric.statistical_parity_difference(),
-                "generalized_entropy_index": transf_metric.generalized_entropy_index(),
-                "theil_index": transf_metric.theil_index(),
-                "equal_opportunity_difference": transf_metric.equal_opportunity_difference()
+                "error_rate": round(transf_metric.error_rate(), 3),
+                "average_odds_difference": round(transf_metric.average_odds_difference(), 3),
+                "average_abs_odds_difference": round(transf_metric.average_abs_odds_difference(), 3),
+                "selection_rate": round(transf_metric.selection_rate(), 3),
+                "disparate_impact": round(transf_metric.disparate_impact(), 3),
+                "statistical_parity_difference": round(transf_metric.statistical_parity_difference(), 3),
+                "generalized_entropy_index": round(transf_metric.generalized_entropy_index(), 3),
+                "theil_index": round(transf_metric.theil_index(), 3),
+                "equal_opportunity_difference": round(transf_metric.equal_opportunity_difference(), 3)
             }
         }
 
@@ -590,7 +602,11 @@ miti_result = Mitigation()
 # Request: form data (Data id)
 # Response: Bias metrics (json)
 @app.post("/original", response_class=RedirectResponse)
-async def original_metrics(request: Request, background_tasks: BackgroundTasks, data_name: Optional[str] = Form(None)):
+async def original_metrics(
+    request: Request, background_tasks: BackgroundTasks,
+    data_name: Optional[str] = Form(None),
+    tsne: Optional[str] = Form(None)
+    ):
     global metrics
     global miti_result
     metrics = Metrics()
@@ -616,7 +632,7 @@ async def original_metrics(request: Request, background_tasks: BackgroundTasks, 
             protected_attribute_names=['Bias'], privileged_classes=[[1]])
         #os.remove("custom.csv")
         
-    background_tasks.add_task(metrics.get_metrics, data)
+    background_tasks.add_task(metrics.get_metrics, data, tsne)
 
     return '/original/{}'.format(data_name)
 
@@ -631,6 +647,7 @@ async def check_metrics(request: Request, data_name: str):
             "request": request,
             "data_name": data_name,
             "data": {
+                "protected": metrics.result['data']['protected'],
                 "privileged": {
                     "num_negatives": metrics.result['data']['privileged']['num_negatives'],
                     "num_positives": metrics.result['data']['privileged']['num_positives'],
@@ -678,7 +695,7 @@ async def select_algorithm(request: Request, data_name: str):
         "request": request,
         "data_name": data_name
     }
-    return templates.TemplateResponse("algorithm_selection.html", context=context)
+    return templates.TemplateResponse("algorithm_select.html", context=context)
 
 
 # Mitigation Result

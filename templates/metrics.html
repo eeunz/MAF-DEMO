@@ -1,76 +1,287 @@
+<!DOCTYPE HTML>
+<!--
+	Hyperspace by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
 <html>
 	<head>
-		<title>Bias metrics</title>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/style/biaschart.css') }}">
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='/style/dlchart.css') }}">
+		<title>Original Metrics - MAF</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="/static/assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="/static/assets/css/noscript.css" /></noscript>
 	</head>
-	<body>
-		<h1>Bias metrics</h1>
-		<div>
-			<div>
-				<h2>Data metrics</h2>
-				<b>Number of negatives (privileged)</b>: {{ data.privileged.num_negatives }}<br>
-				<b>Number of positives (privileged)</b>: {{ data.privileged.num_positives }}<br>
-				<b>Number of negatives (unprivileged)</b>: {{ data.unprivileged.num_negatives }}<br>
-				<b>Number of positives (unprivileged)</b>: {{ data.unprivileged.num_positives }}<br>
-				<b>Base rate</b>: {{ data.base_rate }}<br>
-				<b>Statistical parity difference</b>: {{ data.statistical_parity_difference }}<br>
-				<b>Consistency</b>: {{ data.consistency }}<br>
+	<body class="is-preload">
+
+		<!-- Header -->
+			<header id="header">
+				<a href="/" class="title">MAF</a>
+				<nav>
+					<ul>
+						<li><a href="/">Home</a></li>
+						<li><a href="/data">Data</a></li>
+						<li><a href="#" class="active">Metrics</a></li>
+						<li><a href="#">Algorithms</a></li>
+						<li><a href="#">Compare</a></li>
+					</ul>
+				</nav>
+			</header>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<section id="main" class="wrapper">
+						<div class="inner">
+							<div class="row">
+								<div class="col-6 col-12-medium">
+									<ul class="actions">
+										<li><a href="/algorithm/{{ data_name }}" class="button primary fit">Algorithm selection</a></li>
+										<li><a href="/" class="button fit">Home</a></li>
+									</ul>
+								</div>
+							</div>
+							<h1 class="major">Original Metrics</h1>
+							<!-- Text -->
+								<section>
+									<ul class="alt">
+										<li><b>Dataset</b>: {{ data_name }}</li>
+										<li><b>Protected attribute</b>: {{ data.protected }}</li>
+									</ul>
+								</section>
+							
+							<!-- Table -->
+								<h2>Tables of metrics</h2>
+								<section>
+									<h3>A. Data metrics</h3>
+									<div class="table-wrapper">
+										<table>
+											<thead>
+												<tr>
+													<th>Attribute</th>
+													<th>Value</th>
+													<th>Fairness value</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>Number of nagatives (privileged)</td>
+													<td>{{ data.privileged.num_negatives }}</td>
+													<td></td>
+												</tr>
+												<tr>
+													<td>Number of positives (privileged)</td>
+													<td>{{ data.privileged.num_positives }}</td>
+													<td></td>
+												</tr>
+												<tr>
+													<td>Number of negatives (unprivileged)</td>
+													<td>{{ data.unprivileged.num_negatives }}</td>
+													<td></td>
+												</tr>
+												<tr>
+													<td>Number of positives (unprivileged)</td>
+													<td>{{ data.unprivileged.num_positives }}</td>
+													<td></td>
+												</tr>
+												<tr>
+													<td>Base rate</td>
+													<td>{{ data.base_rate }}</td>
+													<td></td>
+												</tr>
+												<tr>
+													<td>Statistical parity difference</td>
+													<td>{{ data.statistical_parity_difference }}</td>
+													<td>0.0</td>
+												</tr>
+												<tr>
+													<td>Consistency</td>
+													<td>{{ data.consistency }}</td>
+													<td></td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</section>
+								<section>
+									<h3>B. Performance</h3>
+									<div class="table-wrapper">
+										<table>
+											<thead>
+												<tr>
+													<th>Attribute</th>
+													<th>Value</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>Recall</td>
+													<td>{{ performance.recall }}</td>
+												</tr>
+												<tr>
+													<td>True negative rate</td>
+													<td>{{ performance.true_negative_rate }}</td>
+												</tr>
+												<tr>
+													<td>False positive rate</td>
+													<td>{{ performance.false_positive_rate }}</td>
+												</tr>
+												<tr>
+													<td>False negative rate</td>
+													<td>{{ performance.false_negative_rate }}</td>
+												</tr>
+												<tr>
+													<td>Precision</td>
+													<td>{{ performance.precision }}</td>
+												</tr>
+												<tr>
+													<td>Negative predictive value</td>
+													<td>{{ performance.negative_predictive_value }}</td>
+												</tr>
+												<tr>
+													<td>False discovery rate</td>
+													<td>{{ performance.false_discovery_rate }}</td>
+												</tr>
+												<tr>
+													<td>False omission rate</td>
+													<td>{{ performance.false_omission_rate }}</td>
+												</tr>
+												<tr>
+													<td>Accuracy</td>
+													<td>{{ performance.accuracy }}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</section>
+								<section>
+									<h3>C. Classification metrics</h3>
+									<div class="table-wrapper">
+										<table>
+											<thead>
+												<tr>
+													<th>Attribute</th>
+													<th>Value</th>
+													<th>Fairness value</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>Error rate</td>
+													<td>{{ classify.error_rate }}</td>
+													<td></td>
+												</tr>
+												<tr>
+													<td>Average odds difference</td>
+													<td>{{ classify.average_odds_difference }}</td>
+													<td>0.0</td>
+												</tr>
+												<tr>
+													<td>Average abs odds difference</td>
+													<td>{{ classify.average_abs_odds_difference }}</td>
+													<td>0.0</td>
+												</tr>
+												<tr>
+													<td>Selection rate</td>
+													<td>{{ classify.selection_rate }}</td>
+													<td></td>
+												</tr>
+												<tr>
+													<td>Disparate impact</td>
+													<td>{{ classify.disparate_impact }}</td>
+													<td>1.0</td>
+												</tr>
+												<tr>
+													<td>Statistical parity difference</td>
+													<td>{{ classify.statistical_parity_difference }}</td>
+													<td>0.0</td>
+												</tr>
+												<tr>
+													<td>Generalized entropy index</td>
+													<td>{{ classify.generalized_entropy_index }}</td>
+													<td>1.0</td>
+												</tr>
+												<tr>
+													<td>Theil index</td>
+													<td>{{ classify.theil_index }}</td>
+													<td>1.0</td>
+												</tr>
+												<tr>
+													<td>Equal opportunity difference</td>
+													<td>{{ classify.equal_opportunity_difference }}</td>
+													<td>0.0</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</section>
+								<br>
+
+							<!-- Chart -->
+								<h2>Charts of matrics</h2>
+								<section>
+									<h3>A. Data metrics</h3>
+									<figure class="highcharts-figure">
+										<div>
+											<div id="tsne" class="scatter"></div>
+										</div>
+									</figure>
+									<figure class="highcharts-figure">
+										<div>
+											<div id="data_n_bar" class="bar"></div>
+											<div id="data_n_bar3d" class="bar3d"></div>
+											<div id="data_chart_bar" class="bar"></div>
+										</div>
+									</figure>
+								</section>
+								<br><br>
+								<section>
+									<h3>B. Performance measures</h3>
+									<figure class="highcharts-figure">
+										<div>
+											<div id="performance_chart_bar" class="bar"></div>
+										</div>
+									</figure>
+								</section>
+								<br><br>
+								<section>
+									<h3>C. Classification metrics</h3>
+									<figure class="highcharts-figure">
+										<div>
+											<div id="cls_chart_bar" class="bar"></div>
+										</div>
+									</figure>
+								</section>
+								<br><br>
+								<div class="row">
+									<div class="col-6 col-12-medium">
+										<ul class="actions">
+											<li><a href="/algorithm/{{ data_name }}" class="button primary fit">Algorithm selection</a></li>
+											<li><a href="/" class="button fit">Home</a></li>
+										</ul>
+									</div>
+								</div>
+						</div>
 			</div>
-			<div>
-				<h2>Performance</h2>
-				<b>Recall</b>: {{ performance.recall }}<br>
-				<b>True negative rate</b>: {{ performance.true_negative_rate }}<br>
-				<b>False positive rate</b>: {{ performance.false_positive_rate }}<br>
-				<b>False negative rate</b>: {{ performance.false_negative_rate }}<br>
-				<b>Precision</b>: {{ performance.precision }}<br>
-				<b>Negative predictive value</b>: {{ performance.negative_predictive_value }}<br>
-				<b>False discovery rate</b>: {{ performance.false_discovery_rate }}<br>
-				<b>False omission rate</b>: {{ performance.false_omission_rate }}<br>
-				<b>Accuracy</b>: {{ performance.accuracy }}<br>
-			</div>
-			<div>
-				<h2>Classification metrics</h2>
-				<b>Error rate</b>: {{ classify.error_rate }}<br>
-				<b>Average odds difference</b>: {{ classify.average_odds_difference }}<br>
-				<b>Average abs odds difference</b>: {{ classify.average_abs_odds_difference }}<br>
-				<b>Selection rate</b>: {{ classify.selection_rate }}<br>
-				<b>Disparate impact</b>: {{ classify.disparate_impact }}<br>
-				<b>Statistical parity difference</b>: {{ classify.statistical_parity_difference }}<br>
-				<b>Generalized entropy index</b>: {{ classify.generalized_entropy_index }}<br>
-				<b>Theil index</b>: {{ classify.theil_index }}<br>
-				<b>Equal opportunity difference</b>: {{ classify.equal_opportunity_difference }}<br>
-			</div>
-		</div>
-		<h1>Bias charts</h1>
-		<div>
-			<!-- Bias chart area -->
-			<h2>Data metrics chart</h2>
-			<figure class="highcharts-figure">
-				<div>
-					<div id="tsne" class="scatter"></div>
+
+		<!-- Footer -->
+			<footer id="footer" class="wrapper alt">
+				<div class="inner">
+					<ul class="menu">
+						<li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+					</ul>
 				</div>
-			</figure>
-			<figure class="highcharts-figure">
-				<div>
-					<div id="data_n_bar" class="bar"></div>
-					<div id="data_n_bar3d" class="bar3d"></div>
-					<div id="data_chart_bar" class="bar"></div>
-				</div>
-			</figure>
-			<h2>Performance chart</h2>
-			<figure class="highcharts-figure">
-				<div>
-					<div id="performance_chart_bar" class="bar"></div>
-				</div>
-			</figure>
-			<h2>Classification metrics chart</h2>
-			<figure class="highcharts-figure">
-				<div>
-					<div id="cls_chart_bar" class="bar"></div>
-				</div>
-			</figure>
-		</div>
+			</footer>
+
+		<!-- Scripts -->
+			<script src="/static/assets/js/jquery.min.js"></script>
+			<script src="/static/assets/js/jquery.scrollex.min.js"></script>
+			<script src="/static/assets/js/jquery.scrolly.min.js"></script>
+			<script src="/static/assets/js/browser.min.js"></script>
+			<script src="/static/assets/js/breakpoints.min.js"></script>
+			<script src="/static/assets/js/util.js"></script>
+			<script src="/static/assets/js/main.js"></script>
 
 		<!-- Bias chart script -->
 		<script type="text/javascript" src="https://code.highcharts.com/highcharts.js"></script>
@@ -83,7 +294,7 @@
 			const tsne_priv = {{ data.privileged.TSNE }};
 			const tsne_unpriv = {{ data.unprivileged.TSNE }};
 
-			const tsneChart = new ScatterChart('tsne', 'T-SNE');
+			const tsneChart = new ScatterChart('tsne', '{{ data_name }}');
 			tsneChart.push(tsne_priv, {color: "rgba(129, 199, 233, 0.2)", name: "Privileged"});
 			tsneChart.push(tsne_unpriv, {color: "rgba(255, 187, 0, 0.2)", name: "Unprivileged"});
 			tsneChart.show();
@@ -151,7 +362,5 @@
 			clsBar.push(clsMeasure, {name: "Bias Measure"});
 			clsBar.show();
 		</script>
-		<a href="/data">Prev</a>
-		<a href="/algorithm/{{data_name}}">Next</a>
 	</body>
 </html>
