@@ -295,8 +295,8 @@
 			const tsne_unpriv = {{ data.unprivileged.TSNE }};
 
 			const tsneChart = new ScatterChart('tsne', '{{ data_name }}');
-			tsneChart.push(tsne_priv, {color: "rgba(129, 199, 233, 0.2)", name: "Privileged"});
-			tsneChart.push(tsne_unpriv, {color: "rgba(255, 187, 0, 0.2)", name: "Unprivileged"});
+			tsneChart.push(tsne_priv, {color: "rgb(129, 199, 233)", name: "Privileged"});
+			tsneChart.push(tsne_unpriv, {color: "rgb(255, 187, 0)", name: "Unprivileged"});
 			tsneChart.show();
 
 			const n_privileged = [{{ data.privileged.num_negatives }}, {{ data.privileged.num_positives }}];

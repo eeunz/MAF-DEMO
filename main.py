@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 import os
 import torch
+import random
 from torch import nn
 from torch import optim
 
@@ -96,8 +97,17 @@ class Metrics:
                 protected_attribute_names=dataset.protected_attribute_names,
                 privileged_classes=dataset.privileged_protected_attributes)
 
-            tsne_priv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(ds_priv.features)
-            tsne_unpriv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=3).fit_transform(ds_unpriv.features)
+            # Sampling
+            sample_size = 50
+
+            priv_sample = random.sample(ds_priv.features.tolist(), k=sample_size)
+            priv_sample = np.array(priv_sample)
+            unpriv_sample = random.sample(ds_unpriv.features.tolist(), k=sample_size)
+            unpriv_sample = np.array(unpriv_sample)
+
+            # T-SNE analysis
+            tsne_priv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=5).fit_transform(priv_sample)
+            tsne_unpriv = TSNE(n_components=2, learning_rate='auto', init='random', perplexity=5).fit_transform(unpriv_sample)
             tsne_priv = tsne_priv.tolist()
             tsne_unpriv = tsne_unpriv.tolist()
             print("T-SNE analysis end")
