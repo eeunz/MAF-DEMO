@@ -12,7 +12,7 @@ MAF-DEMO currently contains three tablu data and one image data. It also include
 * Data : COMPAS, German credit scoring, Adult census income, Public Figures Face Database(Image)
 * Algorithm : Disparate_Impact_Remover, Learning_Fair_Representation, Reweighing, Gerry_Fair_Classifier, Meta_Fair_Classifier, Prejudice_Remover, FairBatch, FairFeatureDistillation(Image only), FairnessVAE(Image only), KernelDensityEstimator, LearningFromFairness(Image only)
 
-## 사용방법
+## How to use
 ### Data selection
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/2385e86d-68ff-4fbb-9060-6c0514aacc9d)
 
