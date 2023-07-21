@@ -26,7 +26,7 @@ MAF-DEMO currently contains three tablu data and one image data. It also include
 * Data 자체 Bias measures와 Base model (SVM) bias measures, T-SNE analysis를 차트로 표현합니다.
 
 ### 3. algorithm select
-![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/c6b846d0-106c-41b9-9bf2-af881095ac8c)
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/48daef24-be8e-4c87-8a8f-27e7ccb53687)
 
 편향성 완화 알고리즘 선택 화면입니다. 현재 AIF360의 알고리즘과 컨소시엄에서 개발한 알고리즘을 포함하고 있으며, 향후 추가할 예정입니다. SOTA 알고리즘 중 일부는 Image data로만 활용 가능하며, 현재 Image data는 Pubfig 데이터만 존재합니다. Pubfig 가 아닐 경우 해당 알고리즘들은 disabled 됩니다.
 
