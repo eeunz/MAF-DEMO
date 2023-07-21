@@ -13,7 +13,7 @@ MAF-DEMO는 MAF 웹사이트를 구축하는 방법을 보여줍니다.
 
 
 ## What's inside?
-MAF-DEMO 에는 현재 3개의 tablu 데이터와 1개의 이미지 데이터가 포함되어 있습니다. 또한 14개의 알고리즘을 포함하고 있으며 앞으로도 계속 보완할 예정이다.
+MAF-DEMO 에는 현재 3개의 tablu 데이터와 1개의 이미지 데이터가 포함되어 있습니다. 또한 14개의 알고리즘을 포함하고 있으며 앞으로도 계속 보완할 예정입니다.
 * Data : COMPAS, German credit scoring, Adult census income, Public Figures Face Database(Image)
 * Algorithm : Disparate_Impact_Remover, Learning_Fair_Representation, Reweighing, Gerry_Fair_Classifier, Meta_Fair_Classifier, Prejudice_Remover, FairBatch, FairFeatureDistillation(Image only), FairnessVAE(Image only), KernelDensityEstimator, LearningFromFairness(Image only)
 
@@ -24,7 +24,7 @@ MAF-DEMO 에는 현재 3개의 tablu 데이터와 1개의 이미지 데이터가
 샘플 데이터 선택 화면입니다. 현재 Sample 디렉토리에 적합한 파일이 있어야 제대로 실행되며, 데이터는 Preset sample 4가지, Custom dataset 1가지 선택 가능합니다.
 * Custom dataset 선택 시 제한사항
   * csv 파일만 가능
-   Target, Bias 열이 반드시 하나씩 있어야 하며, 이름도 동일해야함
+   Target, Bias 열이 반드시 하나씩 있어야 하며, 이름도 동일해야합니다.
 
 ### 2. Metric
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/0d07f526-f571-4fe9-b55b-06ad6dcec7d2)
