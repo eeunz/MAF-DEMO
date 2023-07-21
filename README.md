@@ -1,4 +1,7 @@
 # MAF-DEMO
+
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/fc525522-7432-4d2c-8ab3-88f6f3a371e3)
+
 MAF-DEMO shows how to build a MAF website.
 # What it is
 Demonstration of possible implementation of web presence for learning purposes. It can be used as a starting point for your own project.
