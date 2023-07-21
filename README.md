@@ -24,9 +24,7 @@ MAF-DEMO currently contains three tablu data and one image data. It also include
 ### 2. Metric
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/056f245b-c8e1-4fbc-9eca-5010a231389e)
 
-* Data 자체 Bias measures
-* Base model (SVM) bias measures
-* T-SNE analysis
+* Data 자체 Bias measures와 Base model (SVM) bias measures, T-SNE analysis를 차트로 표현합니다.
 
 ### 3. algorithm select
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/c6b846d0-106c-41b9-9bf2-af881095ac8c)
