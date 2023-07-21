@@ -1,6 +1,7 @@
 # MAF-DEMO
 
-![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/fc525522-7432-4d2c-8ab3-88f6f3a371e3)
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/675ab84c-20c3-48fa-bed1-4b3e1d41a7ee)
+
 
 MAF-DEMO shows how to build a MAF website.
 ## What it is
@@ -31,9 +32,9 @@ MAF-DEMO currently contains three tablu data and one image data. It also include
 편향성 완화 알고리즘 선택 화면입니다. 현재 AIF360의 알고리즘과 컨소시엄에서 개발한 알고리즘을 포함하고 있으며, 향후 추가할 예정입니다. SOTA 알고리즘 중 일부는 Image data로만 활용 가능하며, 현재 Image data는 Pubfig 데이터만 존재합니다. Pubfig 가 아닐 경우 해당 알고리즘들은 disabled 됩니다.
 
 
-
 ### 4. compare models
-![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/c24ffed4-72f0-43d8-a985-4e455af45c2c)
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/b51ab9ad-cfc4-4b79-9d0a-032b9ae00f50)
+
 * base model 과 mitigated model 간의 결과를 비교합니다.
 * 편향성이 낮은 수치는 하이라이트로 표시됩니다.
 
