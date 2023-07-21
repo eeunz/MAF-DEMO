@@ -22,8 +22,7 @@ MAF-DEMO currently contains three tablu data and one image data. It also include
    Target, Bias 열이 반드시 하나씩 있어야 하며, 이름도 동일해야함
 
 ### 2. Metric
-![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/056f245b-c8e1-4fbc-9eca-5010a231389e)
-
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/0d07f526-f571-4fe9-b55b-06ad6dcec7d2)
 * Data 자체 Bias measures와 Base model (SVM) bias measures, T-SNE analysis를 차트로 표현합니다.
 
 ### 3. algorithm select
