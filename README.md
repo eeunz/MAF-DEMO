@@ -2,20 +2,18 @@
 
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/675ab84c-20c3-48fa-bed1-4b3e1d41a7ee)
 
-MAF-DEMO는 MAF 웹사이트를 구축하는 방법을 보여줍니다.
-
-## What it is
-이것은 데모입니다. 학습 목적을 위한 웹 존재의 가능한 구현을 보여주며, 자신의 프로젝트를 위한 출발점으로 사용할 수 있습니다.
-
-## What's inside
-실시간 운영을 위해 준비된 웹 서비스가 아닙니다. 이를 달성하려면 추가 단계가 필요합니다.
+## About
+MAF-DEMO는 MAF의 기능을 담고있는 데모입니다. MAF-DEMO는 현재 실시간 운영을 위해 준비된 웹 서비스가 아닙니다. 이를 달성하려면 추가 단계가 필요합니다.
 
 
-
-## What's inside?
 MAF-DEMO 에는 현재 3개의 tablu 데이터와 1개의 이미지 데이터가 포함되어 있습니다. 또한 14개의 알고리즘을 포함하고 있으며 앞으로도 계속 보완할 예정입니다.
 * Data : COMPAS, German credit scoring, Adult census income, Public Figures Face Database(Image)
 * Algorithm : Disparate_Impact_Remover, Learning_Fair_Representation, Reweighing, Gerry_Fair_Classifier, Meta_Fair_Classifier, Prejudice_Remover, FairBatch, FairFeatureDistillation(Image only), FairnessVAE(Image only), KernelDensityEstimator, LearningFromFairness(Image only)
+
+## Setup
+```bash
+git clone https://github.com/konanaif/MAF-DEMO.git
+```
 
 ## How to use
 ### 1. Data selection
