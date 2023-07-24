@@ -39,4 +39,4 @@ Data 자체 Bias measures와 Base model (SVM) bias measures, T-SNE analysis를 �
 ### 4. compare models
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/b51ab9ad-cfc4-4b79-9d0a-032b9ae00f50)
 
-base model 과 mitigated model 간의 결과를 비교합니다.
+알고리즘을 선택하면 base model 과 mitigated model 간의 결과를 비교합니다.
