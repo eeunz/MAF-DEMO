@@ -28,7 +28,7 @@ git clone https://github.com/konanaif/MAF-DEMO.git
 
 ### 2. Metric
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/0d07f526-f571-4fe9-b55b-06ad6dcec7d2)
-* Data 자체 Bias measures와 Base model (SVM) bias measures, T-SNE analysis를 차트로 표현합니다.
+Data 자체 Bias measures와 Base model (SVM) bias measures, T-SNE analysis를 차트로 표현합니다.
 
 ### 3. algorithm select
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/48daef24-be8e-4c87-8a8f-27e7ccb53687)
@@ -39,6 +39,4 @@ git clone https://github.com/konanaif/MAF-DEMO.git
 ### 4. compare models
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/b51ab9ad-cfc4-4b79-9d0a-032b9ae00f50)
 
-* base model 과 mitigated model 간의 결과를 비교합니다.
-* 편향성이 낮은 수치는 하이라이트로 표시됩니다.
-
+base model 과 mitigated model 간의 결과를 비교합니다.
