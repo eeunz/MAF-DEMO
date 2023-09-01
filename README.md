@@ -25,8 +25,19 @@ git clone https://github.com/konanaif/MAF-DEMO.git
   * csv 파일만 업로드 가능하며, 데이터에는 Target, Bias 열이 반드시 하나씩 존재해야합니다.
 
 ### 2. Metric
-![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/0d07f526-f571-4fe9-b55b-06ad6dcec7d2)
-Data 자체 Bias measures와 Base model (SVM) bias measures, T-SNE analysis를 차트로 표현합니다.
+Data 자체 Bias measures와 Base model (SVM) bias measures, T-SNE analysis를 차트와 테이블로 표현합니다.
+
+#### Data metrics
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/a3929d84-9094-4a76-bd5f-ce8ea6b1d462)
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/8abd57e0-142f-410b-94a2-5d5561d35a7e)
+
+#### Performance
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/802f3cad-db27-4448-ba13-d2a2d4b30b4f)
+
+#### Classification metrics
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/5fc92a47-cffe-4b44-aad1-2caff22042f4)
+
+
 
 ### 3. algorithm select
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/48daef24-be8e-4c87-8a8f-27e7ccb53687)
