@@ -1,8 +1,8 @@
 # MAF-DEMO
+MAF-DEMO는 MAF의 기능을 담고있는 웹데모입니다. 
 
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/675ab84c-20c3-48fa-bed1-4b3e1d41a7ee)
 
-MAF-DEMO는 MAF의 기능을 담고있는 웹데모입니다. 
 
 ## About
 MAF-DEMO는 현재 실시간 운영을 위해 준비된 웹 서비스가 아닙니다. 이를 달성하려면 추가 단계가 필요합니다.
