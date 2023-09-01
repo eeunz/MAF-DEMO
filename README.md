@@ -29,13 +29,15 @@ Data 자체 Bias measures와 Base model (SVM) bias measures, T-SNE analysis를 �
 
 #### Data metrics
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/a3929d84-9094-4a76-bd5f-ce8ea6b1d462)
-![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/8abd57e0-142f-410b-94a2-5d5561d35a7e)
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/9e0f8ff8-cbfe-444c-b7c7-058e2fc1738c)
 
 #### Performance
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/802f3cad-db27-4448-ba13-d2a2d4b30b4f)
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/2bad02c3-f1ff-4a2a-9c18-35afc0eaf977)
 
 #### Classification metrics
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/5fc92a47-cffe-4b44-aad1-2caff22042f4)
+![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/642b5c3b-c8d2-48a0-a9bf-6901ed666e23)
 
 
 
