@@ -23,8 +23,7 @@ git clone https://github.com/konanaif/MAF-DEMO.git
 
 샘플 데이터 선택 화면입니다. 현재 Sample 디렉토리에 적합한 파일이 있어야 제대로 실행되며, 데이터는 Preset sample 4가지, Custom dataset 1가지 선택 가능합니다.
 * Custom dataset 선택 시 제한사항
-  * csv 파일만 가능
-   Target, Bias 열이 반드시 하나씩 있어야 하며, 이름도 동일해야합니다.
+  * csv 파일만 업로드 가능하며, 데이터에는 Target, Bias 열이 반드시 하나씩 존재해야합니다.
 
 ### 2. Metric
 ![image](https://github.com/eeunz/MAF-DEMO/assets/110804596/0d07f526-f571-4fe9-b55b-06ad6dcec7d2)
